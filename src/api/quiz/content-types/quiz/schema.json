@@ -1,0 +1,42 @@
+{
+  "kind": "collectionType",
+  "collectionName": "quizzes",
+  "info": {
+    "singularName": "quiz",
+    "pluralName": "quizzes",
+    "displayName": "Quiz"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "titolo": {
+      "type": "string",
+      "required": true,
+      "unique": false
+    },
+    "soglia_minima": {
+      "type": "integer",
+      "required": true
+    },
+    "offerta": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::offerta.offerta",
+      "inversedBy": "quiz"
+    },
+    "domandas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::domanda.domanda",
+      "mappedBy": "quiz"
+    },
+    "quiz_eseguitos": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::quiz-eseguito.quiz-eseguito",
+      "mappedBy": "quiz"
+    }
+  }
+}

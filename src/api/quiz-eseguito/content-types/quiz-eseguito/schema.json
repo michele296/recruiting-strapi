@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "quiz_eseguitos",
+  "info": {
+    "singularName": "quiz-eseguito",
+    "pluralName": "quiz-eseguitos",
+    "displayName": "quiz-eseguito"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "utente_candidato": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::utente-candidato.utente-candidato",
+      "inversedBy": "quiz_eseguitos"
+    },
+    "quiz": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::quiz.quiz",
+      "inversedBy": "quiz_eseguitos"
+    },
+    "punteggio_ottenuto": {
+      "type": "integer"
+    },
+    "superato": {
+      "type": "boolean"
+    }
+  }
+}

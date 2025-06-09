@@ -1,0 +1,76 @@
+{
+  "kind": "collectionType",
+  "collectionName": "utente_aziendales",
+  "info": {
+    "singularName": "utente-aziendale",
+    "pluralName": "utente-aziendales",
+    "displayName": "UtenteAziendale"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Nome": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 50,
+      "required": true
+    },
+    "Cognome": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 50,
+      "required": true
+    },
+    "Citta": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 50,
+      "required": true
+    },
+    "Provincia": {
+      "type": "string",
+      "required": true
+    },
+    "Nazione": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 50,
+      "required": true
+    },
+    "Email": {
+      "type": "email",
+      "required": true,
+      "unique": true
+    },
+    "Password": {
+      "type": "password",
+      "required": true
+    },
+    "Ruolo": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "REFERENTE",
+        "AMMINISTRATORE",
+        "ORDINARIO"
+      ]
+    },
+    "DataDiNascita": {
+      "type": "date"
+    },
+    "azienda": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::azienda.azienda",
+      "inversedBy": "utenti_aziendali"
+    },
+    "offertas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::offerta.offerta",
+      "mappedBy": "utente_aziendale"
+    }
+  }
+}

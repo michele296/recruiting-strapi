@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ha_diplomas",
+  "info": {
+    "singularName": "ha-diploma",
+    "pluralName": "ha-diplomas",
+    "displayName": "ha-diploma"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "voto": {
+      "type": "integer",
+      "required": true,
+      "min": 60,
+      "max": 100
+    },
+    "utente_candidato": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::utente-candidato.utente-candidato",
+      "inversedBy": "ha_diplomas"
+    },
+    "diploma": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::diploma.diploma",
+      "inversedBy": "ha_diplomas"
+    },
+    "scuola": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::scuola.scuola",
+      "inversedBy": "ha_diplomas"
+    }
+  }
+}

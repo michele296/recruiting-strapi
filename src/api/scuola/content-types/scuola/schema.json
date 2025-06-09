@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "scuolas",
+  "info": {
+    "singularName": "scuola",
+    "pluralName": "scuolas",
+    "displayName": "Scuola"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nome": {
+      "type": "string"
+    },
+    "citta": {
+      "type": "string"
+    },
+    "ha_diplomas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ha-diploma.ha-diploma",
+      "mappedBy": "scuola"
+    }
+  }
+}

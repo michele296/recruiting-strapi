@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "diplomas",
+  "info": {
+    "singularName": "diploma",
+    "pluralName": "diplomas",
+    "displayName": "Diploma"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nome": {
+      "type": "string",
+      "required": true
+    },
+    "ha_diplomas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ha-diploma.ha-diploma",
+      "mappedBy": "diploma"
+    },
+    "offertas": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::offerta.offerta",
+      "inversedBy": "diplomas"
+    }
+  }
+}

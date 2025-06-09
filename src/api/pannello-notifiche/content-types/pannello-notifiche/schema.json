@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "pannello_notifiches",
+  "info": {
+    "singularName": "pannello-notifiche",
+    "pluralName": "pannello-notifiches",
+    "displayName": "PannelloNotifiche"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "notifica": {
+      "type": "string"
+    },
+    "utente_candidato": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::utente-candidato.utente-candidato",
+      "inversedBy": "pannello_notifiche"
+    }
+  }
+}

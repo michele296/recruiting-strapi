@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "attestatoes",
+  "info": {
+    "singularName": "attestato",
+    "pluralName": "attestatoes",
+    "displayName": "Attestato"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nome": {
+      "type": "string"
+    },
+    "ha_attestatoes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ha-attestato.ha-attestato",
+      "mappedBy": "attestato"
+    },
+    "offertas": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::offerta.offerta",
+      "inversedBy": "attestatoes"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "rispostas",
+  "info": {
+    "singularName": "risposta",
+    "pluralName": "rispostas",
+    "displayName": "Risposta"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "testo": {
+      "type": "string",
+      "required": true
+    },
+    "corretta": {
+      "type": "boolean",
+      "required": true
+    },
+    "domanda": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::domanda.domanda",
+      "inversedBy": "rispostas"
+    }
+  }
+}

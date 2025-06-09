@@ -1,0 +1,7 @@
+/**
+ * ha-attestato router
+ */
+
+import { factories } from '@strapi/strapi';
+
+export default factories.createCoreRouter('api::ha-attestato.ha-attestato');

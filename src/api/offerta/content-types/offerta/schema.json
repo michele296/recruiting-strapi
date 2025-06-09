@@ -1,0 +1,69 @@
+{
+  "kind": "collectionType",
+  "collectionName": "offertas",
+  "info": {
+    "singularName": "offerta",
+    "pluralName": "offertas",
+    "displayName": "Offerta"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "tipo_contratto": {
+      "type": "string",
+      "required": true
+    },
+    "info": {
+      "type": "text"
+    },
+    "benefit": {
+      "type": "string"
+    },
+    "stipendio": {
+      "type": "decimal",
+      "required": true
+    },
+    "Provincia": {
+      "type": "string",
+      "required": true
+    },
+    "utente_aziendale": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::utente-aziendale.utente-aziendale",
+      "inversedBy": "offertas"
+    },
+    "indirizzo_scolasticos": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::indirizzo-scolastico.indirizzo-scolastico",
+      "mappedBy": "offertas"
+    },
+    "diplomas": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::diploma.diploma",
+      "mappedBy": "offertas"
+    },
+    "laureas": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::laurea.laurea",
+      "mappedBy": "offertas"
+    },
+    "attestatoes": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::attestato.attestato",
+      "mappedBy": "offertas"
+    },
+    "quiz": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::quiz.quiz",
+      "mappedBy": "offerta"
+    }
+  }
+}

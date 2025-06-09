@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "laureas",
+  "info": {
+    "singularName": "laurea",
+    "pluralName": "laureas",
+    "displayName": "Laurea"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nome": {
+      "type": "string"
+    },
+    "ha_laureas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ha-laurea.ha-laurea",
+      "mappedBy": "laurea"
+    },
+    "offertas": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::offerta.offerta",
+      "inversedBy": "laureas"
+    }
+  }
+}

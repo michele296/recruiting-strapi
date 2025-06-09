@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "universitas",
+  "info": {
+    "singularName": "universita",
+    "pluralName": "universitas",
+    "displayName": "Universita"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nome": {
+      "type": "string"
+    },
+    "citta": {
+      "type": "string"
+    },
+    "ha_laureas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ha-laurea.ha-laurea",
+      "mappedBy": "universita"
+    }
+  }
+}

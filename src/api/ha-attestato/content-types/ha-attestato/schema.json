@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ha_attestatoes",
+  "info": {
+    "singularName": "ha-attestato",
+    "pluralName": "ha-attestatoes",
+    "displayName": "ha-attestato"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "livello": {
+      "type": "string"
+    },
+    "attestato": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::attestato.attestato",
+      "inversedBy": "ha_attestatoes"
+    },
+    "utente_candidato": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::utente-candidato.utente-candidato",
+      "inversedBy": "ha_attestatoes"
+    }
+  }
+}

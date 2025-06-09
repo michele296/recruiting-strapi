@@ -1,0 +1,36 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ha_laureas",
+  "info": {
+    "singularName": "ha-laurea",
+    "pluralName": "ha-laureas",
+    "displayName": "ha-laurea"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "voto": {
+      "type": "integer"
+    },
+    "utente_candidato": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::utente-candidato.utente-candidato",
+      "inversedBy": "ha_laureas"
+    },
+    "laurea": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::laurea.laurea",
+      "inversedBy": "ha_laureas"
+    },
+    "universita": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::universita.universita",
+      "inversedBy": "ha_laureas"
+    }
+  }
+}

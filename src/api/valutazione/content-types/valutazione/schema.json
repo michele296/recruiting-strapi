@@ -1,0 +1,14 @@
+{
+  "kind": "collectionType",
+  "collectionName": "valutaziones",
+  "info": {
+    "singularName": "valutazione",
+    "pluralName": "valutaziones",
+    "displayName": "Valutazione"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {}
+}

@@ -1,0 +1,101 @@
+{
+  "kind": "collectionType",
+  "collectionName": "utente_candidatoes",
+  "info": {
+    "singularName": "utente-candidato",
+    "pluralName": "utente-candidatoes",
+    "displayName": "UtenteCandidato"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Nome": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 50,
+      "required": true
+    },
+    "Cognome": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 50,
+      "required": true
+    },
+    "Citta": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 50,
+      "required": true
+    },
+    "Provincia": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 50,
+      "required": true
+    },
+    "Nazione": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 50,
+      "required": true
+    },
+    "DataDiNascita": {
+      "type": "date",
+      "required": true
+    },
+    "Email": {
+      "type": "email",
+      "required": true,
+      "unique": true
+    },
+    "Password": {
+      "type": "password",
+      "required": true
+    },
+    "voto_diploma": {
+      "type": "integer",
+      "required": false,
+      "unique": false,
+      "min": 60,
+      "max": 100
+    },
+    "pannello_notifiche": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::pannello-notifiche.pannello-notifiche",
+      "mappedBy": "utente_candidato"
+    },
+    "indirizzo_scolastico": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::indirizzo-scolastico.indirizzo-scolastico",
+      "inversedBy": "utente_candidatoes"
+    },
+    "ha_diplomas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ha-diploma.ha-diploma",
+      "mappedBy": "utente_candidato"
+    },
+    "ha_laureas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ha-laurea.ha-laurea",
+      "mappedBy": "utente_candidato"
+    },
+    "ha_attestatoes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::ha-attestato.ha-attestato",
+      "mappedBy": "utente_candidato"
+    },
+    "quiz_eseguitos": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::quiz-eseguito.quiz-eseguito",
+      "mappedBy": "utente_candidato"
+    }
+  }
+}
