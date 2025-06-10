@@ -67,12 +67,6 @@
       "target": "api::pannello-notifiche.pannello-notifiche",
       "mappedBy": "utente_candidato"
     },
-    "indirizzo_scolastico": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::indirizzo-scolastico.indirizzo-scolastico",
-      "inversedBy": "utente_candidatoes"
-    },
     "ha_diplomas": {
       "type": "relation",
       "relation": "oneToMany",
@@ -96,6 +90,12 @@
       "relation": "oneToMany",
       "target": "api::quiz-eseguito.quiz-eseguito",
       "mappedBy": "utente_candidato"
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "utente_candidatoes"
     }
   }
 }

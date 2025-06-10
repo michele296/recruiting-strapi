@@ -35,12 +35,6 @@
       "target": "api::utente-aziendale.utente-aziendale",
       "inversedBy": "offertas"
     },
-    "indirizzo_scolasticos": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::indirizzo-scolastico.indirizzo-scolastico",
-      "mappedBy": "offertas"
-    },
     "diplomas": {
       "type": "relation",
       "relation": "manyToMany",

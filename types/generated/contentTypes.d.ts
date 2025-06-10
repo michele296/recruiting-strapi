@@ -674,40 +674,6 @@ export interface ApiHaLaureaHaLaurea extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiIndirizzoScolasticoIndirizzoScolastico
-  extends Struct.CollectionTypeSchema {
-  collectionName: 'indirizzo_scolasticos';
-  info: {
-    displayName: 'IndirizzoScolastico';
-    pluralName: 'indirizzo-scolasticos';
-    singularName: 'indirizzo-scolastico';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::indirizzo-scolastico.indirizzo-scolastico'
-    > &
-      Schema.Attribute.Private;
-    nome: Schema.Attribute.String & Schema.Attribute.Required;
-    offertas: Schema.Attribute.Relation<'manyToMany', 'api::offerta.offerta'>;
-    publishedAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    utente_candidatoes: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::utente-candidato.utente-candidato'
-    >;
-  };
-}
-
 export interface ApiLaureaLaurea extends Struct.CollectionTypeSchema {
   collectionName: 'laureas';
   info: {
@@ -761,10 +727,6 @@ export interface ApiOffertaOfferta extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     diplomas: Schema.Attribute.Relation<'manyToMany', 'api::diploma.diploma'>;
-    indirizzo_scolasticos: Schema.Attribute.Relation<
-      'manyToMany',
-      'api::indirizzo-scolastico.indirizzo-scolastico'
-    >;
     info: Schema.Attribute.Text;
     laureas: Schema.Attribute.Relation<'manyToMany', 'api::laurea.laurea'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1091,10 +1053,6 @@ export interface ApiUtenteCandidatoUtenteCandidato
       'oneToMany',
       'api::ha-laurea.ha-laurea'
     >;
-    indirizzo_scolastico: Schema.Attribute.Relation<
-      'manyToOne',
-      'api::indirizzo-scolastico.indirizzo-scolastico'
-    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1132,6 +1090,10 @@ export interface ApiUtenteCandidatoUtenteCandidato
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    users_permissions_user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
     voto_diploma: Schema.Attribute.Integer &
       Schema.Attribute.SetMinMax<
         {
@@ -1625,7 +1587,6 @@ export interface PluginUsersPermissionsUser
   };
   options: {
     draftAndPublish: false;
-    timestamps: true;
   };
   attributes: {
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
@@ -1666,6 +1627,10 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 3;
       }>;
+    utente_candidatoes: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::utente-candidato.utente-candidato'
+    >;
   };
 }
 
@@ -1687,7 +1652,6 @@ declare module '@strapi/strapi' {
       'api::ha-attestato.ha-attestato': ApiHaAttestatoHaAttestato;
       'api::ha-diploma.ha-diploma': ApiHaDiplomaHaDiploma;
       'api::ha-laurea.ha-laurea': ApiHaLaureaHaLaurea;
-      'api::indirizzo-scolastico.indirizzo-scolastico': ApiIndirizzoScolasticoIndirizzoScolastico;
       'api::laurea.laurea': ApiLaureaLaurea;
       'api::offerta.offerta': ApiOffertaOfferta;
       'api::pannello-notifiche.pannello-notifiche': ApiPannelloNotifichePannelloNotifiche;
