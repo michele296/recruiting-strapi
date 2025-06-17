@@ -25,11 +25,15 @@ const DashboardCandidato = () => {
     }
     
     setCandidato(userData);
+    console.log('📦 userData dal localStorage:', userData.id);
     loadDashboardData(userData.id);
   }, [navigate]);
+  
 
   const loadDashboardData = async (candidatoId) => {
     setLoading(true);
+    console.log('🚀 Chiamata a loadDashboardData con ID:', candidatoId);
+
     try {
       // Carica i dati della dashboard
       const [profileData, candidatureData, offerteData] = await Promise.all([

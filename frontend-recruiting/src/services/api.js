@@ -150,27 +150,36 @@ export const loginUtenteCandidato = async (credenziali) => {
 // ===== FUNZIONI PER GESTIONE COMPETENZE =====
 
 // Ottieni profilo candidato
-export const getCandidatoProfile = async (candidatoId) => {
+export async function getCandidatoProfile(userId) {
+  console.log('⏳ Caricamento profilo candidato...', userId);
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:1337';
+  const token = localStorage.getItem('jwt'); // Assicurati che il token sia salvato con questa chiave
+  console.log('🔐 Token recuperato dal localStorage:', token);
+
+  if (!token) {
+    throw new Error('Token JWT non trovato. L\'utente potrebbe non essere autenticato.');
+  }
+
   try {
-     const token = localStorage.getItem('jwt'); // o dove hai salvato il token
-    const response = await fetch(`${API_BASE_URL}/utente-candidatoes/${candidatoId}?populate=*`, {
+    const response = await fetch(`${API_URL}/api/utente-candidatoes/${userId}?populate=*`, {
       method: 'GET',
       headers: {
-         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
-      },
+        'Authorization': `Bearer ${token}`
+      }
     });
 
     if (!response.ok) {
       throw new Error(`Errore HTTP: ${response.status} ${response.statusText}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Errore nel caricamento profilo candidato:', error);
     throw error;
   }
-};
+}
 
 // Ottieni indirizzi scolastici
 export const getIndirizziScolastici = async () => {

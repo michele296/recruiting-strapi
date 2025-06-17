@@ -496,6 +496,43 @@ export interface ApiAziendaAzienda extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiCandidaturaCandidatura extends Struct.CollectionTypeSchema {
+  collectionName: 'candidaturas';
+  info: {
+    displayName: 'Candidatura';
+    pluralName: 'candidaturas';
+    singularName: 'candidatura';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    data_candidatura: Schema.Attribute.Date;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::candidatura.candidatura'
+    > &
+      Schema.Attribute.Private;
+    offerta: Schema.Attribute.Relation<'manyToOne', 'api::offerta.offerta'>;
+    publishedAt: Schema.Attribute.DateTime;
+    quiz_superato: Schema.Attribute.Boolean;
+    Stato: Schema.Attribute.Enumeration<
+      ['inviata', 'accettata', 'rifiutata', 'in attesa']
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    utente_candidato: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::utente-candidato.utente-candidato'
+    >;
+  };
+}
+
 export interface ApiDiplomaDiploma extends Struct.CollectionTypeSchema {
   collectionName: 'diplomas';
   info: {
@@ -707,6 +744,41 @@ export interface ApiLaureaLaurea extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiNotificaNotifica extends Struct.CollectionTypeSchema {
+  collectionName: 'notificas';
+  info: {
+    displayName: 'notifica';
+    pluralName: 'notificas';
+    singularName: 'notifica';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    data_invio: Schema.Attribute.Date;
+    letto: Schema.Attribute.Boolean;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::notifica.notifica'
+    > &
+      Schema.Attribute.Private;
+    messaggio: Schema.Attribute.Text;
+    pannello_notifiche: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::pannello-notifiche.pannello-notifiche'
+    >;
+    publishedAt: Schema.Attribute.DateTime;
+    titolo: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiOffertaOfferta extends Struct.CollectionTypeSchema {
   collectionName: 'offertas';
   info: {
@@ -723,6 +795,10 @@ export interface ApiOffertaOfferta extends Struct.CollectionTypeSchema {
       'api::attestato.attestato'
     >;
     benefit: Schema.Attribute.String;
+    candidaturas: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::candidatura.candidatura'
+    >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -738,6 +814,7 @@ export interface ApiOffertaOfferta extends Struct.CollectionTypeSchema {
     Provincia: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     quiz: Schema.Attribute.Relation<'oneToOne', 'api::quiz.quiz'>;
+    quiz_richiesto: Schema.Attribute.Boolean;
     stipendio: Schema.Attribute.Decimal & Schema.Attribute.Required;
     tipo_contratto: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
@@ -771,7 +848,7 @@ export interface ApiPannelloNotifichePannelloNotifiche
       'api::pannello-notifiche.pannello-notifiche'
     > &
       Schema.Attribute.Private;
-    notifica: Schema.Attribute.String;
+    notifiche: Schema.Attribute.Relation<'oneToMany', 'api::notifica.notifica'>;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1022,6 +1099,10 @@ export interface ApiUtenteCandidatoUtenteCandidato
     draftAndPublish: false;
   };
   attributes: {
+    candidaturas: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::candidatura.candidatura'
+    >;
     Citta: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
@@ -1091,7 +1172,7 @@ export interface ApiUtenteCandidatoUtenteCandidato
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     users_permissions_user: Schema.Attribute.Relation<
-      'manyToOne',
+      'oneToOne',
       'plugin::users-permissions.user'
     >;
     voto_diploma: Schema.Attribute.Integer &
@@ -1627,8 +1708,8 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 3;
       }>;
-    utente_candidatoes: Schema.Attribute.Relation<
-      'oneToMany',
+    utente_candidato: Schema.Attribute.Relation<
+      'oneToOne',
       'api::utente-candidato.utente-candidato'
     >;
   };
@@ -1647,12 +1728,14 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::attestato.attestato': ApiAttestatoAttestato;
       'api::azienda.azienda': ApiAziendaAzienda;
+      'api::candidatura.candidatura': ApiCandidaturaCandidatura;
       'api::diploma.diploma': ApiDiplomaDiploma;
       'api::domanda.domanda': ApiDomandaDomanda;
       'api::ha-attestato.ha-attestato': ApiHaAttestatoHaAttestato;
       'api::ha-diploma.ha-diploma': ApiHaDiplomaHaDiploma;
       'api::ha-laurea.ha-laurea': ApiHaLaureaHaLaurea;
       'api::laurea.laurea': ApiLaureaLaurea;
+      'api::notifica.notifica': ApiNotificaNotifica;
       'api::offerta.offerta': ApiOffertaOfferta;
       'api::pannello-notifiche.pannello-notifiche': ApiPannelloNotifichePannelloNotifiche;
       'api::quiz-eseguito.quiz-eseguito': ApiQuizEseguitoQuizEseguito;

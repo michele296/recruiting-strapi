@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "notificas",
+  "info": {
+    "singularName": "notifica",
+    "pluralName": "notificas",
+    "displayName": "notifica"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "titolo": {
+      "type": "string"
+    },
+    "messaggio": {
+      "type": "text"
+    },
+    "letto": {
+      "type": "boolean"
+    },
+    "data_invio": {
+      "type": "date"
+    },
+    "pannello_notifiche": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::pannello-notifiche.pannello-notifiche",
+      "inversedBy": "notifiche"
+    }
+  }
+}

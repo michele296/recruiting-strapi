@@ -11,12 +11,12 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "info": {
+      "type": "text"
+    },
     "tipo_contratto": {
       "type": "string",
       "required": true
-    },
-    "info": {
-      "type": "text"
     },
     "benefit": {
       "type": "string"
@@ -58,6 +58,15 @@
       "relation": "oneToOne",
       "target": "api::quiz.quiz",
       "mappedBy": "offerta"
+    },
+    "candidaturas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::candidatura.candidatura",
+      "mappedBy": "offerta"
+    },
+    "quiz_richiesto": {
+      "type": "boolean"
     }
   }
 }

@@ -66,11 +66,11 @@
       "inversedBy": "users",
       "configurable": false
     },
-    "utente_candidatoes": {
+    "utente_candidato": {
       "type": "relation",
-      "relation": "oneToMany",
+      "relation": "oneToOne",
       "target": "api::utente-candidato.utente-candidato",
-      "mappedBy": "users_permissions_user"
+      "inversedBy": "users_permissions_user"
     }
   }
 }

@@ -12,7 +12,7 @@ module.exports = {
     }
 
     const utente = await strapi.db.query('api::utente-candidato.utente-candidato').findOne({
-      where: { Email: email },
+      where: { Email: email.toLowerCase() },
     });
 
     if (!utente) {
@@ -29,7 +29,7 @@ module.exports = {
       id: utente.id,
       email: utente.Email,
       ruolo: 'candidato',
-    });
+    }); 
 
     return ctx.send({
       jwt: token,

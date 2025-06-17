@@ -11,14 +11,17 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "notifica": {
-      "type": "string"
-    },
     "utente_candidato": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::utente-candidato.utente-candidato",
       "inversedBy": "pannello_notifiche"
+    },
+    "notifiche": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::notifica.notifica",
+      "mappedBy": "pannello_notifiche"
     }
   }
 }

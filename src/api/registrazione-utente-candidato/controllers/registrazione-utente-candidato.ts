@@ -1,4 +1,4 @@
-//registrazione-utente-candidato//
+// registrazione-candidato.js
 'use strict';
 
 module.exports = {
@@ -19,7 +19,6 @@ module.exports = {
     }
 
     try {
-      // Verifica email univoca
       const candidatoEsistente = await strapi.db.query('api::utente-candidato.utente-candidato').findOne({
         where: { Email: email },
       });
@@ -29,12 +28,12 @@ module.exports = {
       }
 
       // Crea candidato
-      const candidato = await strapi.db.query('api::utente-candidato.utente-candidato').create({
+      const nuovoCandidato = await strapi.db.query('api::utente-candidato.utente-candidato').create({
         data: {
           Nome: nome,
           Cognome: cognome,
           Email: email,
-          Password: password, // (da criptare in futuro)
+          Password: password,
           DataDiNascita: dataDiNascita,
           Citta: citta,
           Provincia: provincia,
@@ -43,8 +42,14 @@ module.exports = {
         }
       });
 
-      return ctx.created({ candidato });
+      // Crea e collega pannello notifiche
+      const pannello = await strapi.db.query('api::pannello-notifiche.pannello-notifiche').create({
+        data: {
+          utente_candidato: nuovoCandidato.id
+        }
+      });
 
+      return ctx.created({ candidato: nuovoCandidato });
     } catch (err) {
       console.error('Errore durante la registrazione candidato:', err);
       return ctx.internalServerError('Errore nella registrazione');

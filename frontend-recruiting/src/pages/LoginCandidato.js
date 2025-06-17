@@ -26,7 +26,7 @@ const LoginCandidato = () => {
     setLoading(true);
 
     try {
-      const response = await loginUtenteCandidato(formData);
+      const response = await loginUtenteCandidato(formData);  
 
       // ✅ Verifica struttura: deve avere jwt e user
       if (!response.jwt || !response.user) {

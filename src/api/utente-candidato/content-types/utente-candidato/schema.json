@@ -93,9 +93,15 @@
     },
     "users_permissions_user": {
       "type": "relation",
-      "relation": "manyToOne",
+      "relation": "oneToOne",
       "target": "plugin::users-permissions.user",
-      "inversedBy": "utente_candidatoes"
+      "mappedBy": "utente_candidato"
+    },
+    "candidaturas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::candidatura.candidatura",
+      "mappedBy": "utente_candidato"
     }
   }
 }
