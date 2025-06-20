@@ -54,13 +54,6 @@
       "type": "password",
       "required": true
     },
-    "voto_diploma": {
-      "type": "integer",
-      "required": false,
-      "unique": false,
-      "min": 60,
-      "max": 100
-    },
     "pannello_notifiche": {
       "type": "relation",
       "relation": "oneToOne",

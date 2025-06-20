@@ -477,6 +477,7 @@ export interface ApiAziendaAzienda extends Struct.CollectionTypeSchema {
         maxLength: 100;
         minLength: 2;
       }>;
+    offertas: Schema.Attribute.Relation<'oneToMany', 'api::offerta.offerta'>;
     PartitaIva: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
@@ -574,7 +575,7 @@ export interface ApiDomandaDomanda extends Struct.CollectionTypeSchema {
     singularName: 'domanda';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -794,6 +795,7 @@ export interface ApiOffertaOfferta extends Struct.CollectionTypeSchema {
       'manyToMany',
       'api::attestato.attestato'
     >;
+    azienda: Schema.Attribute.Relation<'manyToOne', 'api::azienda.azienda'>;
     benefit: Schema.Attribute.String;
     candidaturas: Schema.Attribute.Relation<
       'oneToMany',
@@ -1175,14 +1177,6 @@ export interface ApiUtenteCandidatoUtenteCandidato
       'oneToOne',
       'plugin::users-permissions.user'
     >;
-    voto_diploma: Schema.Attribute.Integer &
-      Schema.Attribute.SetMinMax<
-        {
-          max: 100;
-          min: 60;
-        },
-        number
-      >;
   };
 }
 

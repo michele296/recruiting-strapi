@@ -28,18 +28,19 @@ const LoginCandidato = () => {
     try {
       const response = await loginUtenteCandidato(formData);  
 
-      // ✅ Verifica struttura: deve avere jwt e user
-      if (!response.jwt || !response.user) {
+      // ✅ Verifica che ci sia l'utente nella risposta
+      if (!response.user) {
         throw new Error('Risposta del server non valida');
       }
 
       alert(`Benvenuto ${response.user.nome}!`);
 
-      // ✅ Salva token e dati utente
-      localStorage.setItem('jwt', response.jwt);
+      // ✅ Salva solo l'ID del candidato e i dati utente (senza token)
+      localStorage.setItem('candidatoId', response.user.id.toString());
       localStorage.setItem('candidato', JSON.stringify(response.user));
+      localStorage.setItem('isLoggedIn', 'true');
 
-      console.log('Token salvato:', localStorage.getItem('jwt'));
+      console.log('ID candidato salvato:', localStorage.getItem('candidatoId'));
 
       navigate('/dashboard-candidato'); // Redirect
     } catch (error) {

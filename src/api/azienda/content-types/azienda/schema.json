@@ -48,6 +48,12 @@
       "relation": "oneToMany",
       "target": "api::utente-aziendale.utente-aziendale",
       "mappedBy": "azienda"
+    },
+    "offertas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::offerta.offerta",
+      "mappedBy": "azienda"
     }
   }
 }

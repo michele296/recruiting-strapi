@@ -29,7 +29,7 @@ module.exports = {
         return ctx.forbidden('Solo amministratori o referenti possono creare offerte');
       }
 
-      // Creo la nuova offerta
+      // ✅ Creo la nuova offerta, includendo l'azienda
       const nuovaOfferta = await strapi.db.query('api::offerta.offerta').create({
         data: {
           tipo_contratto,
@@ -38,6 +38,7 @@ module.exports = {
           Provincia,
           stipendio,
           utente_aziendale: utente.id,
+          azienda: utente.azienda.id, // <-- Aggiunta la relazione con Azienda
           diplomas: diplomaIds,
           laureas: laureaIds,
           attestatoes: attestatoIds,
@@ -48,13 +49,11 @@ module.exports = {
       // Trovo candidati compatibili per inviare notifiche
       if (Provincia && (diplomaIds.length || laureaIds.length || attestatoIds.length)) {
         
-        // Costruisco le condizioni di ricerca dinamicamente
         const whereConditions = {
           Provincia: Provincia,
           $or: []
         };
 
-        // Aggiungo condizioni per diplomi se presenti
         if (diplomaIds.length > 0) {
           whereConditions.$or.push({
             ha_diplomas: {
@@ -65,7 +64,6 @@ module.exports = {
           });
         }
 
-        // Aggiungo condizioni per lauree se presenti
         if (laureaIds.length > 0) {
           whereConditions.$or.push({
             ha_laureas: {
@@ -76,7 +74,6 @@ module.exports = {
           });
         }
 
-        // Aggiungo condizioni per attestati se presenti
         if (attestatoIds.length > 0) {
           whereConditions.$or.push({
             ha_attestatoes: {
@@ -97,7 +94,6 @@ module.exports = {
           }
         });
 
-        // Creo notifiche per i candidati compatibili
         for (const candidato of candidatiCompatibili) {
           if (candidato.pannello_notifiche) {
             await strapi.db.query('api::notifica.notifica').create({

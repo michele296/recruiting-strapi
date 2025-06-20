@@ -1,13 +1,13 @@
-export default {
+module.exports = {
   routes: [
-    // {
-    //  method: 'GET',
-    //  path: '/creazione-quiz',
-    //  handler: 'creazione-quiz.exampleAction',
-    //  config: {
-    //    policies: [],
-    //    middlewares: [],
-    //  },
-    // },
-  ],
+    {
+      method: 'POST',
+      path: '/creazione-quiz',
+      handler: 'creazione-quiz.crea',
+      config: {
+        policies: [],
+        auth: false
+      }
+    }
+  ]
 };

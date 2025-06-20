@@ -67,6 +67,12 @@
     },
     "quiz_richiesto": {
       "type": "boolean"
+    },
+    "azienda": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::azienda.azienda",
+      "inversedBy": "offertas"
     }
   }
 }

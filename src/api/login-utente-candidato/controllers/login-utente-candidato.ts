@@ -1,7 +1,4 @@
-//login-utente-candidato.js//
 'use strict';
-
-const jwt = require('jsonwebtoken');
 
 module.exports = {
   async login(ctx) {
@@ -11,34 +8,33 @@ module.exports = {
       return ctx.badRequest('Email e password sono obbligatori');
     }
 
-    const utente = await strapi.db.query('api::utente-candidato.utente-candidato').findOne({
-      where: { Email: email.toLowerCase() },
-    });
+    try {
+      const utente = await strapi.db.query('api::utente-candidato.utente-candidato').findOne({
+        where: { Email: email.toLowerCase() },
+      });
 
-    if (!utente) {
-      return ctx.unauthorized('Credenziali non valide');
+      if (!utente) {
+        return ctx.unauthorized('Credenziali non valide');
+      }
+
+      // Verifica password (assicurati che sia salvata in hash nel DB!)
+      if (utente.Password !== password) {
+        return ctx.unauthorized('Credenziali non valide');
+      }
+
+      // ✅ Restituisce solo i dati dell'utente senza token
+      return ctx.send({
+        success: true,
+        user: {
+          id: utente.id,
+          nome: utente.Nome,
+          cognome: utente.Cognome,
+          email: utente.Email,
+        },
+      });
+    } catch (error) {
+      console.error('Errore nel login:', error);
+      return ctx.internalServerError('Errore interno del server');
     }
-
-    // Verifica password (assicurati che sia salvata in hash nel DB!)
-    if (utente.Password !== password) {
-      return ctx.unauthorized('Credenziali non valide');
-    }
-
-    // ✅ Crea JWT
-    const token = strapi.plugins['users-permissions'].services.jwt.issue({
-      id: utente.id,
-      email: utente.Email,
-      ruolo: 'candidato',
-    }); 
-
-    return ctx.send({
-      jwt: token,
-      user: {
-        id: utente.id,
-        nome: utente.Nome,
-        cognome: utente.Cognome,
-        email: utente.Email,
-      },
-    });
   },
 };

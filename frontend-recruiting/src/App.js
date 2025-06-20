@@ -6,7 +6,6 @@ import LoginCandidato from './pages/LoginCandidato.js';
 import RegistraCandidato from './pages/RegistraCandidato.js';
 import Homepage from './pages/Homepage.js';
 import DashboardCandidato from './pages/DashboardCandidato.js';
-import GestioneCompetenze from './pages/GestioneCompetenze.js';
 function App() {
   return (
     <Router>
@@ -17,7 +16,6 @@ function App() {
         <Route path="/login-candidato" element={<LoginCandidato />} />
         <Route path="/registra-candidato" element={<RegistraCandidato />} />
         <Route path="/dashboard-candidato" element={<DashboardCandidato />} />
-        <Route path="/gestisci-competenze" element={<GestioneCompetenze />} />
         <Route path="/" element={<div><h1>Homepage</h1><p>Vai su /registra-azienda</p></div>} />
       </Routes>
     </Router>
