@@ -708,7 +708,14 @@ export interface ApiHaLaureaHaLaurea extends Struct.CollectionTypeSchema {
       'manyToOne',
       'api::utente-candidato.utente-candidato'
     >;
-    voto: Schema.Attribute.Integer;
+    voto: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 110;
+          min: 60;
+        },
+        number
+      >;
   };
 }
 

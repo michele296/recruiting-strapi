@@ -57,9 +57,16 @@ const fetchCandidatoData = async (candidatoId) => {
     localStorage.removeItem('candidatoId');
     localStorage.removeItem('candidato');
     localStorage.removeItem('isLoggedIn');
-    navigate('/');
+    navigate('/login-candidato');
   };
-
+  const handleViewOfferDetails = (offertaId) => {
+  const candidatoId = localStorage.getItem('candidatoId');
+  navigate(`/dettagli-offerta/${offertaId}?candidatoId=${candidatoId}`);
+};
+  //const handleGestioneFormazione = (candidatoId) => {
+  //const candidatoId = localStorage.getItem('candidatoId');
+  //navigate(`/gestione-formazione/${candidatoId}`);
+//};
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('it-IT');
@@ -276,14 +283,13 @@ const renderOfferte = () => (
                 <p className="card-text">
                   <strong>Provincia:</strong> {offerta.Provincia}<br/>
                   <strong>Stipendio:</strong> €{offerta.stipendio || 'N/A'}<br/>
-                  <strong>Benefit:</strong> {offerta.benefit || 'N/A'}
+                  <strong>Benefit:</strong> {offerta.benefit || 'N/A'}<br />
+                  <strong>Azienda:</strong> {offerta.azienda || 'N/A'}
                 </p>
-                {offerta.info && (
-                  <p className="card-text">
-                    <small className="text-muted">{offerta.info}</small>
-                  </p>
-                )}
-                <button className="view-all-btn">
+                <button 
+                  className="view-all-btn"
+                  onClick={() => handleViewOfferDetails(offerta.id)}
+                >
                   <i className="bi bi-eye me-1"></i>Visualizza Dettagli
                 </button>
               </div>
@@ -338,7 +344,26 @@ const renderOfferte = () => (
   );
 const renderFormazione = () => (
   <div className="formazione-section">
-    <h2><i className="bi bi-mortarboard me-2"></i>Formazione</h2>
+    <div className="d-flex justify-content-between align-items-center mb-4">
+      <h2><i className="bi bi-mortarboard me-2"></i>Formazione</h2>
+      <button 
+        className="btn btn-primary"
+        onClick={() => {
+          const candidatoId = localStorage.getItem('candidatoId');
+          navigate(`/gestione-formazione/${candidatoId}`);
+        }}
+        style={{
+          background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+          border: 'none',
+          borderRadius: '8px',
+          padding: '0.75rem 1.5rem',
+          fontWeight: '500'
+        }}
+      >
+        <i className="bi bi-plus-circle me-2"></i>
+        Gestisci le tue Competenze
+      </button>
+    </div>
     
     {/* Diplomi */}
     {diplomi && diplomi.length > 0 && (
@@ -421,49 +446,119 @@ const renderFormazione = () => (
   </div>
 );
 
-const renderNotifiche = () => (
-  <div className="notifiche-section">
-    <h2><i className="bi bi-bell me-2"></i>Notifiche</h2>
-    {notifiche && notifiche.length > 0 ? (
-      <div className="row">
-        {notifiche.map((notifica) => (
-          <div key={`notifica-${notifica.id || Math.random()}`} className="col-12 mb-3">
-            <div className="card">
-              <div className="card-body">
-                <div className="d-flex justify-content-between align-items-start">
-                  <div>
-                    <h5 className="card-title">{notifica.titolo || 'Notifica'}</h5>
-                    <p className="card-text">{notifica.messaggio || notifica.contenuto}</p>
-                    {notifica.data && (
-                      <small className="text-muted">
-                        <i className="bi bi-calendar me-1"></i>
-                        {formatDate(notifica.data)}
-                      </small>
-                    )}
-                  </div>
-                  <div>
-                    {notifica.letta ? (
-                      <span className="badge bg-secondary">Letta</span>
-                    ) : (
-                      <span className="badge bg-primary">Non letta</span>
-                    )}
+const renderNotifiche = () => {
+  // Aggiungi debug per verificare i dati delle notifiche
+  console.log('Rendering notifiche:', notifiche);
+  
+  return (
+    <div className="notifiche-section">
+      <h2><i className="bi bi-bell me-2"></i>Notifiche</h2>
+      {notifiche && notifiche.length > 0 ? (
+        <div className="row">
+          {notifiche.map((notifica) => {
+            // Debug per ogni notifica
+            console.log(`Notifica ${notifica.id}:`, {
+              letta: notifica.letta,
+              letto: notifica.letto,
+              allData: notifica
+            });
+            
+            // Controlla sia 'letta' che 'letto' per compatibilità
+            const isRead = notifica.letta || notifica.letto;
+            
+            return (
+              <div key={`notifica-${notifica.id || Math.random()}`} className="col-12 mb-3">
+                <div className={`card ${!isRead ? 'border-primary' : ''}`}>
+                  <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-start">
+                      <div className="flex-grow-1">
+                        <h5 className="card-title d-flex align-items-center">
+                          {!isRead && (
+                            <i className="bi bi-circle-fill text-primary me-2" style={{ fontSize: '0.5rem' }}></i>
+                          )}
+                          {notifica.titolo || 'Notifica'}
+                        </h5>
+                        <p className="card-text">{notifica.messaggio || notifica.contenuto}</p>
+                        {notifica.data && (
+                          <small className="text-muted">
+                            <i className="bi bi-calendar me-1"></i>
+                            {formatDate(notifica.data)}
+                          </small>
+                        )}
+                      </div>
+                      <div className="d-flex flex-column align-items-end gap-2">
+                        <div>
+                          {isRead ? (
+                            <span className="badge bg-secondary">
+                              <i className="bi bi-check-circle me-1"></i>
+                              Letta
+                            </span>
+                          ) : (
+                            <span className="badge bg-primary">
+                              <i className="bi bi-circle me-1"></i>
+                              Non letta
+                            </span>
+                          )}
+                        </div>
+                        {!isRead && (
+                          <button 
+                            className="btn btn-sm btn-outline-primary"
+                            onClick={() => handleMarkAsRead(notifica.id)}
+                            title="Segna come letta"
+                          >
+                            <i className="bi bi-check me-1"></i>
+                            Segna come letta
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    ) : (
-      <div className="text-center py-5">
-        <i className="bi bi-bell display-1 text-muted"></i>
-        <h4 className="mt-3 text-muted">Nessuna notifica</h4>
-        <p className="text-muted">Non hai notifiche al momento</p>
-      </div>
-    )}
-  </div>
-);
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-center py-5">
+          <i className="bi bi-bell display-1 text-muted"></i>
+          <h4 className="mt-3 text-muted">Nessuna notifica</h4>
+          <p className="text-muted">Non hai notifiche al momento</p>
+        </div>
+      )}
+    </div>
+  );
+};
+// Aggiungi questa funzione dopo le altre funzioni helper (prima di renderContent)
+const handleMarkAsRead = async (notificaId) => {
+  try {
+    const response = await fetch(`http://localhost:1337/api/stato-notifica/${notificaId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
+    if (!response.ok) {
+      throw new Error('Errore nell\'aggiornamento della notifica');
+    }
+
+    // Aggiorna lo stato locale delle notifiche
+    setNotifiche(prevNotifiche => 
+      prevNotifiche.map(notifica => 
+        notifica.id === notificaId 
+          ? { ...notifica, letta: true } 
+          : notifica
+      )
+    );
+
+    // Mostra un messaggio di successo (opzionale)
+    console.log('Notifica segnata come letta');
+    
+  } catch (error) {
+    console.error('Errore nel segnare la notifica come letta:', error);
+    alert('Errore nell\'aggiornamento della notifica');
+  }
+};
 const renderContent = () => {
   switch (activeSection) {
     case 'candidature':
@@ -532,7 +627,7 @@ const renderContent = () => {
         </nav>
 
         <div className="sidebar-footer">
-          <Link to="/" className="home-link">
+          <Link to="/Homepage" className="home-link">
             <i className="bi bi-house"></i>
             Torna alla Home
           </Link>

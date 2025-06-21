@@ -12,7 +12,9 @@
   "pluginOptions": {},
   "attributes": {
     "voto": {
-      "type": "integer"
+      "type": "integer",
+      "min": 60,
+      "max": 110
     },
     "utente_candidato": {
       "type": "relation",

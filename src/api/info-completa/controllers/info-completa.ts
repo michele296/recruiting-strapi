@@ -1,5 +1,7 @@
 'use strict';
 
+import azienda from "../../azienda/controllers/azienda";
+
 module.exports = {
   async infoCompleta(ctx) {
     const candidatoId = ctx.params.id;
@@ -86,7 +88,7 @@ module.exports = {
             diplomas: true,
             laureas: true,
             attestatoes: true,
-            quiz: true
+            quiz: true,
           }
         });
       }

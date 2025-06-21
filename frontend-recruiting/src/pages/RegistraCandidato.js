@@ -1,6 +1,6 @@
 // RegistraCandidato.js
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { registraCandidato } from '../services/api.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -8,6 +8,8 @@ import '../styles/Login.css';
 import logo from '../assets/logo.png';
 
 const RegistraCandidato = () => {
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState({
     nome: '',
     cognome: '',
@@ -19,6 +21,8 @@ const RegistraCandidato = () => {
     nazione: '',
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -28,12 +32,39 @@ const RegistraCandidato = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    
     try {
-      await registraCandidato(formData);
-      alert('Registrazione completata con successo!');
+      // Chiamata alla API per registrare il candidato
+      const response = await registraCandidato(formData);
+      
+      // Debug: stampa la risposta completa per vedere la struttura
+      console.log('Risposta completa dalla registrazione:', response);
+      
+      // Estrai l'ID del candidato dalla struttura corretta
+      const candidatoId = response?.candidato?.id;
+      
+      console.log('ID candidato estratto:', candidatoId);
+      
+      if (!candidatoId) {
+        console.error('Struttura risposta:', response);
+        throw new Error('ID candidato non ricevuto dalla registrazione');
+      }
+
+      // Salva i dati di login nel localStorage per l'autenticazione
+      localStorage.setItem('candidatoId', candidatoId.toString());
+      localStorage.setItem('isLoggedIn', 'true');
+      
+      alert('Registrazione completata con successo! Ora completa il tuo profilo formativo.');
+      
+      // Naviga direttamente alla gestione formazione con l'ID del candidato
+      navigate(`/gestione-formazione/${candidatoId}`);
+      
     } catch (error) {
-      console.error(error);
+      console.error('Errore durante la registrazione:', error);
       alert(error.message || 'Errore nella registrazione');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -106,6 +137,7 @@ const RegistraCandidato = () => {
                   value={formData.nome}
                   onChange={handleChange}
                   required
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -123,6 +155,7 @@ const RegistraCandidato = () => {
                   value={formData.cognome}
                   onChange={handleChange}
                   required
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -140,6 +173,7 @@ const RegistraCandidato = () => {
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -157,6 +191,7 @@ const RegistraCandidato = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -173,6 +208,7 @@ const RegistraCandidato = () => {
                   value={formData.dataDiNascita}
                   onChange={handleChange}
                   required
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -198,6 +234,7 @@ const RegistraCandidato = () => {
                   value={formData.citta}
                   onChange={handleChange}
                   required
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -215,6 +252,7 @@ const RegistraCandidato = () => {
                   value={formData.provincia}
                   onChange={handleChange}
                   required
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -232,12 +270,26 @@ const RegistraCandidato = () => {
                   value={formData.nazione}
                   onChange={handleChange}
                   required
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
 
-            <button type="submit" className="btn-register">
-              Registrati
+            <button 
+              type="submit" 
+              className="btn-register"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status">
+                    <span className="visually-hidden">Caricamento...</span>
+                  </span>
+                  Registrazione in corso...
+                </>
+              ) : (
+                'Registrati'
+              )}
             </button>
           </form>
         </div>

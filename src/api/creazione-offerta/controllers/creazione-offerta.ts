@@ -99,7 +99,7 @@ module.exports = {
             await strapi.db.query('api::notifica.notifica').create({
               data: {
                 titolo: 'Nuova offerta compatibile disponibile',
-                messaggio: `È stata pubblicata una nuova offerta adatta al tuo profilo: ${nuovaOfferta.info || 'Visualizza i dettagli'}`,
+                messaggio: `È stata pubblicata una nuova offerta adatta al tuo profilo: ${nuovaOfferta.tipo_contratto || 'Visualizza i dettagli'}`,
                 letto: false,
                 data_invio: new Date(),
                 pannello_notifiche: candidato.pannello_notifiche.id,
