@@ -464,6 +464,7 @@ export interface ApiAziendaAzienda extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     Descrizione: Schema.Attribute.Text;
+    email_contatto: Schema.Attribute.Email;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -477,6 +478,7 @@ export interface ApiAziendaAzienda extends Struct.CollectionTypeSchema {
         maxLength: 100;
         minLength: 2;
       }>;
+    numero_dipendenti: Schema.Attribute.Integer;
     offertas: Schema.Attribute.Relation<'oneToMany', 'api::offerta.offerta'>;
     PartitaIva: Schema.Attribute.String &
       Schema.Attribute.Required &
@@ -494,6 +496,7 @@ export interface ApiAziendaAzienda extends Struct.CollectionTypeSchema {
       'oneToMany',
       'api::utente-aziendale.utente-aziendale'
     >;
+    valori_aziendali: Schema.Attribute.String;
   };
 }
 
@@ -512,6 +515,8 @@ export interface ApiCandidaturaCandidatura extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     data_candidatura: Schema.Attribute.Date;
+    data_colloquio: Schema.Attribute.DateTime;
+    info_colloquio: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -530,6 +535,10 @@ export interface ApiCandidaturaCandidatura extends Struct.CollectionTypeSchema {
     utente_candidato: Schema.Attribute.Relation<
       'manyToOne',
       'api::utente-candidato.utente-candidato'
+    >;
+    valutaziones: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::valutazione.valutazione'
     >;
   };
 }
@@ -1093,6 +1102,10 @@ export interface ApiUtenteAziendaleUtenteAziendale
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    valutaziones: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::valutazione.valutazione'
+    >;
   };
 }
 
@@ -1198,19 +1211,46 @@ export interface ApiValutazioneValutazione extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    candidatura: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::candidatura.candidatura'
+    >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    data_valutazione: Schema.Attribute.Date;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::valutazione.valutazione'
     > &
       Schema.Attribute.Private;
+    motivazione: Schema.Attribute.Text & Schema.Attribute.Required;
+    note_private: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    utente_aziendale: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::utente-aziendale.utente-aziendale'
+    >;
+    valutazione_soft: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 10;
+          min: 0;
+        },
+        number
+      >;
+    valutazione_tecnica: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 10;
+          min: 0;
+        },
+        number
+      >;
   };
 }
 

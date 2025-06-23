@@ -54,6 +54,15 @@
       "relation": "oneToMany",
       "target": "api::offerta.offerta",
       "mappedBy": "azienda"
+    },
+    "numero_dipendenti": {
+      "type": "integer"
+    },
+    "email_contatto": {
+      "type": "email"
+    },
+    "valori_aziendali": {
+      "type": "string"
     }
   }
 }

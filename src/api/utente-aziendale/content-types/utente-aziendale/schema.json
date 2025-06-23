@@ -71,6 +71,12 @@
       "relation": "oneToMany",
       "target": "api::offerta.offerta",
       "mappedBy": "utente_aziendale"
+    },
+    "valutaziones": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::valutazione.valutazione",
+      "mappedBy": "utente_aziendale"
     }
   }
 }

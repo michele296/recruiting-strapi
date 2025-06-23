@@ -37,6 +37,18 @@
       "relation": "manyToOne",
       "target": "api::utente-candidato.utente-candidato",
       "inversedBy": "candidaturas"
+    },
+    "valutaziones": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::valutazione.valutazione",
+      "mappedBy": "candidatura"
+    },
+    "data_colloquio": {
+      "type": "datetime"
+    },
+    "info_colloquio": {
+      "type": "string"
     }
   }
 }

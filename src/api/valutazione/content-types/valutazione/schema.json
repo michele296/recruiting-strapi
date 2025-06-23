@@ -10,5 +10,39 @@
     "draftAndPublish": false
   },
   "pluginOptions": {},
-  "attributes": {}
+  "attributes": {
+    "valutazione_tecnica": {
+      "type": "integer",
+      "unique": false,
+      "min": 0,
+      "max": 10
+    },
+    "valutazione_soft": {
+      "type": "integer",
+      "min": 0,
+      "max": 10
+    },
+    "motivazione": {
+      "type": "text",
+      "required": true
+    },
+    "note_private": {
+      "type": "string"
+    },
+    "data_valutazione": {
+      "type": "date"
+    },
+    "candidatura": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::candidatura.candidatura",
+      "inversedBy": "valutaziones"
+    },
+    "utente_aziendale": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::utente-aziendale.utente-aziendale",
+      "inversedBy": "valutaziones"
+    }
+  }
 }
