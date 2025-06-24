@@ -41,7 +41,7 @@ const apiCall = async (endpoint, options = {}) => {
 
 // Registrazione Azienda
 export const registraAzienda = async (datiAzienda) => {
-  return await apiCall('/registra-azienda/registra', {
+  return await apiCall('/registrazione-azienda', {
     method: 'POST',
     body: JSON.stringify(datiAzienda),
   });
@@ -72,4 +72,11 @@ export const loginUtenteCandidato = async (credenziali) => {
 
   console.log('Login API response:', data);
   return data;
+};
+
+// ===== AZIENDA =====
+
+// Ottieni informazioni azienda
+export const ottieniAzienda = async (aziendaId) => {
+  return await apiCall(`/ottieni-azienda/${aziendaId}`);
 };

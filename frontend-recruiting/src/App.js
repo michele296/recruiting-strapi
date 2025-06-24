@@ -8,6 +8,7 @@ import Homepage from './pages/Homepage.js';
 import DashboardCandidato from './pages/DashboardCandidato.js';
 import DettagliOfferta from './components/DettagliOfferta';
 import GestioneFormazione from './components/GestioneFormazione.js';
+import DashboardAzienda from './pages/DashboardAzienda.js';
 function App() {
   return (
     <Router>
@@ -20,6 +21,7 @@ function App() {
         <Route path="/dashboard-candidato" element={<DashboardCandidato />} />
         <Route path="/dettagli-offerta/:id" element={<DettagliOfferta />} />
         <Route path="/gestione-formazione/:candidatoId" element={<GestioneFormazione />} />
+        <Route path="/dashboard-azienda" element={<DashboardAzienda />} />
         <Route path="/" element={<div><h1>Homepage</h1><p>Vai su /registra-azienda</p></div>} />
       </Routes>
     </Router>

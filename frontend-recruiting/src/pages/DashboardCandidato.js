@@ -141,7 +141,7 @@ const renderDashboardOverview = () => (
       </div>
 
       <div className="stat-card">
-        <div className="stat-icon info-bg">
+        <div className="stat-icon candidate-bg">
           <i className="bi bi-eye"></i>
         </div>
         <div className="stat-content">
@@ -155,7 +155,7 @@ const renderDashboardOverview = () => (
           <i className="bi bi-bell"></i>
         </div>
         <div className="stat-content">
-          <h3>{notifiche?.length || 0}</h3>
+          <h3>{notifiche?.filter(n => !n.letta && !n.letto).length || 0}</h3>
           <p>Notifiche</p>
         </div>
       </div>
@@ -192,7 +192,8 @@ const renderDashboardOverview = () => (
           )}
         </div>
         <button 
-          className="view-all-btn"
+          className="btn w-100"
+          style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.75rem 1.5rem', fontWeight: '500'}}
           onClick={() => setActiveSection('candidature')}
         >
           Vedi Tutte le Candidature
@@ -212,7 +213,7 @@ const renderDashboardOverview = () => (
                     {offerta.Provincia} • €{offerta.stipendio || 'N/A'}
                   </div>
                 </div>
-                <span className="badge bg-info">Nuova</span>
+                <span className="badge" style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white'}}>Nuova</span>
               </div>
             ))
           ) : (
@@ -224,7 +225,8 @@ const renderDashboardOverview = () => (
           )}
         </div>
         <button 
-          className="view-all-btn"
+          className="btn w-100"
+          style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.75rem 1.5rem', fontWeight: '500'}}
           onClick={() => setActiveSection('offerte')}
         >
           Vedi Tutte le Offerte
@@ -252,9 +254,21 @@ const renderCandidature = () => (
                   <strong>Data candidatura:</strong> {formatDate(candidatura.data_candidatura)}<br/>
                   <strong>Quiz superato:</strong> {candidatura.quiz_superato ? 'Sì' : 'No'}
                 </p>
-                <span className={`badge bg-${getStatusColor(candidatura.Stato)} fs-6`}>
+                <span className={`badge bg-${getStatusColor(candidatura.Stato)} fs-6 mb-2`}>
                   {candidatura.Stato || 'In attesa'}
                 </span>
+                {candidatura.data_colloquio && (
+                  <div className="mt-2">
+                    <button 
+                      className="btn btn-sm w-100"
+                      style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white', border: 'none'}}
+                      onClick={() => handleViewColloquio(candidatura)}
+                    >
+                      <i className="bi bi-calendar-event me-1"></i>
+                      Visualizza Colloquio
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -287,7 +301,8 @@ const renderOfferte = () => (
                   <strong>Azienda:</strong> {offerta.azienda || 'N/A'}
                 </p>
                 <button 
-                  className="view-all-btn"
+                  className="btn w-100"
+                  style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white', border: 'none', borderRadius: '8px', padding: '0.75rem 1.5rem', fontWeight: '500'}}
                   onClick={() => handleViewOfferDetails(offerta.id)}
                 >
                   <i className="bi bi-eye me-1"></i>Visualizza Dettagli
@@ -455,7 +470,12 @@ const renderNotifiche = () => {
       <h2><i className="bi bi-bell me-2"></i>Notifiche</h2>
       {notifiche && notifiche.length > 0 ? (
         <div className="row">
-          {notifiche.map((notifica) => {
+          {notifiche.sort((a, b) => {
+            const aLetta = a.letta || a.letto;
+            const bLetta = b.letta || b.letto;
+            if (aLetta === bLetta) return 0;
+            return aLetta ? 1 : -1;
+          }).map((notifica) => {
             // Debug per ogni notifica
             console.log(`Notifica ${notifica.id}:`, {
               letta: notifica.letta,
@@ -468,13 +488,13 @@ const renderNotifiche = () => {
             
             return (
               <div key={`notifica-${notifica.id || Math.random()}`} className="col-12 mb-3">
-                <div className={`card ${!isRead ? 'border-primary' : ''}`}>
+                <div className={`card ${!isRead ? 'border-3' : ''}`} style={!isRead ? {borderColor: '#f093fb'} : {}}>
                   <div className="card-body">
                     <div className="d-flex justify-content-between align-items-start">
                       <div className="flex-grow-1">
                         <h5 className="card-title d-flex align-items-center">
                           {!isRead && (
-                            <i className="bi bi-circle-fill text-primary me-2" style={{ fontSize: '0.5rem' }}></i>
+                            <i className="bi bi-circle-fill me-2" style={{ fontSize: '0.5rem', color: '#f093fb' }}></i>
                           )}
                           {notifica.titolo || 'Notifica'}
                         </h5>
@@ -494,7 +514,7 @@ const renderNotifiche = () => {
                               Letta
                             </span>
                           ) : (
-                            <span className="badge bg-primary">
+                            <span className="badge" style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white'}}>
                               <i className="bi bi-circle me-1"></i>
                               Non letta
                             </span>
@@ -502,7 +522,8 @@ const renderNotifiche = () => {
                         </div>
                         {!isRead && (
                           <button 
-                            className="btn btn-sm btn-outline-primary"
+                            className="btn btn-sm"
+                            style={{border: '1px solid #f093fb', color: '#f093fb'}}
                             onClick={() => handleMarkAsRead(notifica.id)}
                             title="Segna come letta"
                           >
@@ -529,6 +550,13 @@ const renderNotifiche = () => {
   );
 };
 // Aggiungi questa funzione dopo le altre funzioni helper (prima di renderContent)
+const handleViewColloquio = (candidatura) => {
+  const dataColloquio = new Date(candidatura.data_colloquio).toLocaleString('it-IT');
+  const infoColloquio = candidatura.info_colloquio || 'Nessuna informazione aggiuntiva';
+  
+  alert(`COLLOQUIO PROGRAMMATO\n\nData e ora: ${dataColloquio}\n\nInformazioni:\n${infoColloquio}`);
+};
+
 const handleMarkAsRead = async (notificaId) => {
   try {
     const response = await fetch(`http://localhost:1337/api/stato-notifica/${notificaId}`, {
@@ -579,7 +607,7 @@ const renderContent = () => {
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
-      <div className={`dashboard-sidebar ${sidebarOpen ? 'mobile-open' : ''}`}>
+      <div className={`dashboard-sidebar ${sidebarOpen ? 'mobile-open' : ''}`} style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'}}>
         <div className="sidebar-header">
           <img src={logo} alt="Logo" className="sidebar-logo" />
           <div className="user-info">
@@ -660,9 +688,9 @@ const renderContent = () => {
         <div className="notification-wrapper ms-auto position-relative">
   <button className="btn-notification btn btn-link p-0 border-0" onClick={() => setActiveSection('notifiche')}>
     <i className="bi bi-bell fs-4"></i>
-    {notifiche.length > 0 && (
+    {notifiche.filter(n => !n.letta && !n.letto).length > 0 && (
       <span className="notification-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-        {notifiche.length}
+        {notifiche.filter(n => !n.letta && !n.letto).length}
       </span>
     )}
   </button>

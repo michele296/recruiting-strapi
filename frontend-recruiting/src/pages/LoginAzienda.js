@@ -13,6 +13,8 @@ const LoginAzienda = () => {
     password: '',
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -20,24 +22,67 @@ const LoginAzienda = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
+    // Rimuovi errore quando l'utente inizia a digitare
+    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     
     try {
       const response = await loginUtenteAziendale(formData);
-      alert(`Benvenuto ${response.nome}!`);
-      // Qui puoi salvare i dati utente in localStorage o context
-      // localStorage.setItem('user', JSON.stringify(response));
-      navigate('/dashboard-azienda'); // Redirect alla dashboard
+      console.log('Risposta login:', response);
+      
+      // Estrai i dati utente dalla risposta
+      const user = response.user;
+      const userId = user.id;
+      const nome = user.nome;
+      const cognome = user.cognome;
+      const ruolo = user.ruolo;
+      
+      // Estrai i dati dell'azienda dalla risposta del login
+      const aziendaId = user.aziendaId || user.azienda?.id;
+      const aziendaNome = user.azienda?.nome;
+      
+      // Costruisci l'URL con i parametri necessari per la dashboard
+      const dashboardUrl = `/dashboard-azienda?` + 
+        `userId=${userId}&` +
+        `nome=${encodeURIComponent(nome)}&` +
+        `cognome=${encodeURIComponent(cognome)}&` +
+        `ruolo=${encodeURIComponent(ruolo)}&` +
+        `aziendaId=${aziendaId}&` +
+        `aziendaNome=${encodeURIComponent(aziendaNome)}`;
+      
+      // Salva i dati utente nel sessionStorage
+      sessionStorage.setItem('userAzienda', JSON.stringify({
+        id: userId,
+        nome: nome,
+        cognome: cognome,
+        email: user.email,
+        ruolo: ruolo,
+        azienda: user.azienda,
+        aziendaId: aziendaId,
+        loginTime: new Date().toISOString()
+      }));
+      
+      // Mostra messaggio di successo
+      alert(`Benvenuto ${nome}!`);
+      
+      // Naviga alla dashboard
+      navigate(dashboardUrl);
+      
     } catch (error) {
-      console.error(error);
-      alert(error.message || 'Errore nel login');
+      console.error('Errore login:', error);
+      setError(error.message || 'Errore durante il login. Riprova.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -88,7 +133,15 @@ const LoginAzienda = () => {
         <div className="login-form-section">
           <h2 className="form-title">Accedi come Azienda</h2>
           
-          <form onSubmit={handleSubmit}>
+          {/* Messaggio di errore */}
+          {error && (
+            <div className="alert alert-danger" role="alert">
+              <i className="bi bi-exclamation-triangle-fill me-2"></i>
+              {error}
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit} noValidate>
             <div className="form-group">
               <div className="input-group">
                 <span className="input-group-text">
@@ -97,11 +150,13 @@ const LoginAzienda = () => {
                 <input
                   type="email"
                   name="email"
-                  className="form-control"
+                  className={`form-control ${error ? 'is-invalid' : ''}`}
                   placeholder="Email aziendale"
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  disabled={loading}
+                  autoComplete="email"
                 />
               </div>
             </div>
@@ -112,37 +167,69 @@ const LoginAzienda = () => {
                   <i className="bi bi-lock-fill"></i>
                 </span>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
-                  className="form-control"
+                  className={`form-control ${error ? 'is-invalid' : ''}`}
                   placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
                   required
+                  disabled={loading}
+                  autoComplete="current-password"
                 />
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={togglePasswordVisibility}
+                  disabled={loading}
+                  aria-label={showPassword ? "Nascondi password" : "Mostra password"}
+                >
+                  <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                </button>
               </div>
             </div>
 
             <button 
               type="submit" 
               className="btn-login"
-              disabled={loading}
+              disabled={loading || !formData.email || !formData.password}
             >
               {loading ? (
                 <>
-                  <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                   Accesso in corso...
                 </>
               ) : (
-                'Accedi'
+                <>
+                  <i className="bi bi-box-arrow-in-right me-2"></i>
+                  Accedi
+                </>
               )}
             </button>
           </form>
 
+          <div className="form-links">
+            <Link to="/recupera-password" className="forgot-password-link">
+              <i className="bi bi-question-circle me-1"></i>
+              Password dimenticata?
+            </Link>
+          </div>
+
           <div className="login-footer">
             <p>Non hai ancora un account aziendale?</p>
             <Link to="/registra-azienda" className="register-link">
+              <i className="bi bi-building-add me-2"></i>
               Registra la tua azienda
+            </Link>
+          </div>
+
+          {/* Link di accesso alternativo */}
+          <div className="alternative-login">
+            <hr className="divider" />
+            <p className="text-muted">Oppure</p>
+            <Link to="/login-candidato" className="btn btn-outline-secondary w-100">
+              <i className="bi bi-person-fill me-2"></i>
+              Accedi come Candidato
             </Link>
           </div>
         </div>

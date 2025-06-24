@@ -8,6 +8,7 @@ export default {
       valori_aziendali,
       numero_dipendenti,
       email_contatto,
+      Settore,
     } = ctx.request.body;
 
     if (!aziendaId) {
@@ -29,6 +30,7 @@ export default {
       if (valori_aziendali !== undefined) updateData.valori_aziendali = valori_aziendali;
       if (numero_dipendenti !== undefined) updateData.numero_dipendenti = numero_dipendenti;
       if (email_contatto !== undefined) updateData.email_contatto = email_contatto;
+      if (Settore !== undefined) updateData.Settore = Settore;
 
       const aziendaAggiornata = await strapi.db.query('api::azienda.azienda').update({
         where: { id: parseInt(aziendaId, 10) },

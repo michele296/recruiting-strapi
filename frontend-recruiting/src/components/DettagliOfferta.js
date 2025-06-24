@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import '../styles/DashboardCandidato.css';
 
 const DettagliOfferta = () => {
   const { id } = useParams();
@@ -11,6 +12,7 @@ const DettagliOfferta = () => {
   const [loading, setLoading] = useState(true);
   const [inviaLoading, setInviaLoading] = useState(false);
   const [candidaturaInviata, setCandidaturaInviata] = useState(false);
+  const [compatibilita, setCompatibilita] = useState(null);
   
   // Estrai candidatoId dalla query string
   const searchParams = new URLSearchParams(location.search);
@@ -36,11 +38,31 @@ const DettagliOfferta = () => {
 
       const data = await response.json();
       setOfferta(data);
+      
+      // Se c'è un candidato, carica anche la compatibilità
+      if (candidatoId) {
+        await fetchCompatibilita();
+      }
     } catch (error) {
       console.error('Errore nel fetch dei dettagli offerta:', error);
       alert('Errore nel caricamento dei dettagli dell\'offerta');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCompatibilita = async () => {
+    try {
+      const response = await fetch(`http://localhost:1337/api/compatibilita-offerta/${id}/${candidatoId}`);
+      
+      if (!response.ok) {
+        throw new Error('Errore nel calcolo della compatibilità');
+      }
+
+      const data = await response.json();
+      setCompatibilita(data);
+    } catch (error) {
+      console.error('Errore nel fetch della compatibilità:', error);
     }
   };
 
@@ -88,7 +110,7 @@ const DettagliOfferta = () => {
 
   if (loading) {
     return (
-      <div className="container-fluid min-vh-100 d-flex justify-content-center align-items-center bg-primary">
+      <div className="container-fluid min-vh-100 d-flex justify-content-center align-items-center" style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'}}>
         <div className="text-center text-white">
           <div className="spinner-border" role="status">
             <span className="visually-hidden">Caricamento...</span>
@@ -101,7 +123,7 @@ const DettagliOfferta = () => {
 
   if (!offerta) {
     return (
-      <div className="container-fluid min-vh-100 d-flex justify-content-center align-items-center bg-primary">
+      <div className="container-fluid min-vh-100 d-flex justify-content-center align-items-center" style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'}}>
         <div className="text-center text-white">
           <h3>Errore nel caricamento dell'offerta</h3>
           <button className="btn btn-light mt-3" onClick={() => navigate(-1)}>
@@ -140,7 +162,7 @@ const DettagliOfferta = () => {
         <div className="row">
           <div className="col-lg-8">
             <div className="card shadow-sm mb-4">
-              <div className="card-header bg-primary text-white">
+              <div className="card-header text-white" style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'}}>
                 <h2 className="card-title mb-0">
                   <i className="bi bi-briefcase me-2"></i>
                   {offerta.tipo_contratto}
@@ -173,7 +195,7 @@ const DettagliOfferta = () => {
             {/* Requisiti Formativi */}
             {(offerta.diplomas?.length > 0 || offerta.laureas?.length > 0 || offerta.attestatoes?.length > 0) && (
               <div className="card shadow-sm mb-4">
-                <div className="card-header bg-info text-white">
+                <div className="card-header text-white" style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'}}>
                   <h5 className="card-title mb-0">
                     <i className="bi bi-mortarboard me-2"></i>
                     Requisiti Formativi
@@ -250,8 +272,42 @@ const DettagliOfferta = () => {
 
           {/* Sidebar Azioni */}
           <div className="col-lg-4">
+            {/* Sezione Compatibilità */}
+            {compatibilita && (
+              <div className="card shadow-sm mb-4">
+                <div className="card-header text-white" style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'}}>
+                  <h5 className="card-title mb-0">
+                    <i className="bi bi-graph-up me-2"></i>
+                    Compatibilità Profilo
+                  </h5>
+                </div>
+                <div className="card-body text-center">
+                  <div className="mb-3">
+                    <div className="display-4 fw-bold" style={{color: '#f093fb'}}>
+                      {compatibilita.punteggio_totale}
+                      <small className="fs-6 text-muted">/100</small>
+                    </div>
+                    <div className="progress mb-3" style={{height: '10px'}}>
+                      <div 
+                        className={`progress-bar ${
+                          compatibilita.punteggio_totale >= 80 ? 'bg-success' :
+                          compatibilita.punteggio_totale >= 60 ? 'bg-info' :
+                          compatibilita.punteggio_totale >= 40 ? 'bg-warning' : 'bg-danger'
+                        }`}
+                        role="progressbar" 
+                        style={{width: `${Math.min(100, compatibilita.punteggio_totale)}%`}}
+                      ></div>
+                    </div>
+                  </div>
+                  <p className="text-muted small mb-0">
+                    {compatibilita.messaggio}
+                  </p>
+                </div>
+              </div>
+            )}
+            
             <div className="card shadow-sm position-sticky" style={{ top: '20px' }}>
-              <div className="card-header bg-success text-white">
+              <div className="card-header text-white" style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'}}>
                 <h5 className="card-title mb-0">
                   <i className="bi bi-send me-2"></i>
                   Azioni
@@ -269,7 +325,8 @@ const DettagliOfferta = () => {
                       Interessato a questa posizione?
                     </h6>
                     <button
-                      className="btn btn-success btn-lg w-100 mb-3"
+                      className="btn btn-lg w-100 mb-3"
+                      style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white', border: 'none'}}
                       onClick={handleInviaCandidatura}
                       disabled={inviaLoading}
                     >

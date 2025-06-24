@@ -14,9 +14,10 @@ module.exports = {
     }
 
     try {
-      // Trova l'utente
+      // Trova l'utente con l'azienda
       const utente = await strapi.db.query('api::utente-aziendale.utente-aziendale').findOne({
         where: { Email: email },
+        populate: { azienda: true }
       });
 
       if (!utente) {
@@ -57,7 +58,8 @@ module.exports = {
           cognome: utente.Cognome,
           email: utente.Email,
           ruolo: utente.Ruolo,
-          azienda: utente.azienda
+          azienda: utente.azienda,
+          aziendaId: utente.azienda?.id
         }
       });
 
