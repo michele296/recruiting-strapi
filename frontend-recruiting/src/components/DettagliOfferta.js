@@ -13,6 +13,8 @@ const DettagliOfferta = () => {
   const [inviaLoading, setInviaLoading] = useState(false);
   const [candidaturaInviata, setCandidaturaInviata] = useState(false);
   const [compatibilita, setCompatibilita] = useState(null);
+  const [aziendaInfo, setAziendaInfo] = useState(null);
+  const [showAziendaInfo, setShowAziendaInfo] = useState(false);
   
   // Estrai candidatoId dalla query string
   const searchParams = new URLSearchParams(location.search);
@@ -63,6 +65,21 @@ const DettagliOfferta = () => {
       setCompatibilita(data);
     } catch (error) {
       console.error('Errore nel fetch della compatibilità:', error);
+    }
+  };
+
+  const fetchAziendaInfo = async (aziendaId) => {
+    try {
+      const response = await fetch(`http://localhost:1337/api/ottieni-azienda/${aziendaId}`);
+      
+      if (!response.ok) {
+        throw new Error('Errore nel recupero informazioni azienda');
+      }
+
+      const data = await response.json();
+      setAziendaInfo(data.azienda);
+    } catch (error) {
+      console.error('Errore nel fetch azienda:', error);
     }
   };
 
@@ -158,6 +175,55 @@ const DettagliOfferta = () => {
           </div>
         </div>
 
+        {/* Modal Informazioni Azienda */}
+        {showAziendaInfo && aziendaInfo && (
+          <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+            <div className="modal-dialog modal-lg">
+              <div className="modal-content">
+                <div className="modal-header" style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white'}}>
+                  <h5 className="modal-title">
+                    <i className="bi bi-building me-2"></i>
+                    {aziendaInfo.Nome}
+                  </h5>
+                  <button 
+                    type="button" 
+                    className="btn-close btn-close-white" 
+                    onClick={() => setShowAziendaInfo(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <div className="row">
+                    <div className="col-md-6">
+                      <h6 className="text-muted">INFORMAZIONI GENERALI</h6>
+                      <p><strong>Nome:</strong> {aziendaInfo.Nome || 'N/A'}</p>
+                      <p><strong>Provincia:</strong> {aziendaInfo.Provincia || 'N/A'}</p>
+                      <p><strong>Email:</strong> {aziendaInfo.email_contatto || 'N/A'}</p>
+                    </div>
+                    <div className="col-md-6">
+                      <h6 className="text-muted">DETTAGLI AZIENDA</h6>
+                      <p><strong>Dipendenti:</strong> {aziendaInfo.numero_dipendenti || 'N/A'}</p>
+                      <p><strong>Offerte Attive:</strong> {aziendaInfo.offertas?.length || 0}</p>
+                      <p><strong>Utenti Aziendali:</strong> {aziendaInfo.utenti_aziendali?.length || 0}</p>
+                    </div>
+                  </div>
+                  {aziendaInfo.Descrizione && (
+                    <div className="mt-3">
+                      <h6 className="text-muted">DESCRIZIONE</h6>
+                      <p>{aziendaInfo.Descrizione}</p>
+                    </div>
+                  )}
+                  {aziendaInfo.valori_aziendali && (
+                    <div className="mt-3">
+                      <h6 className="text-muted">VALORI AZIENDALI</h6>
+                      <p>{aziendaInfo.valori_aziendali}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Dettagli Offerta */}
         <div className="row">
           <div className="col-lg-8">
@@ -165,14 +231,31 @@ const DettagliOfferta = () => {
               <div className="card-header text-white" style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'}}>
                 <h2 className="card-title mb-0">
                   <i className="bi bi-briefcase me-2"></i>
-                  {offerta.tipo_contratto}
+                  {offerta.info || 'Offerta di lavoro'}
                 </h2>
               </div>
               <div className="card-body">
                 <div className="row">
                   <div className="col-md-6">
                     <h6 className="text-muted">INFORMAZIONI GENERALI</h6>
-                    <p><strong>Azienda:</strong> {offerta.azienda?.nome || offerta.utente_aziendale?.azienda?.nome || 'N/A'}</p>
+                    <div className="mb-3">
+                      <p className="mb-1"><strong>Azienda:</strong></p>
+                      <button 
+                        className="btn btn-link p-0 text-decoration-none d-flex align-items-center"
+                        style={{color: '#f093fb', fontWeight: 'bold', fontSize: '1.25rem'}}
+                        onClick={() => {
+                          const aziendaId = offerta.azienda?.id || offerta.utente_aziendale?.azienda?.id;
+                          if (aziendaId) {
+                            fetchAziendaInfo(aziendaId);
+                            setShowAziendaInfo(true);
+                          }
+                        }}
+                      >
+                        <i className="bi bi-building me-2" style={{fontSize: '1.1rem'}}></i>
+                        {offerta.azienda?.Nome || offerta.utente_aziendale?.azienda?.Nome || 'N/A'}
+                        <i className="bi bi-box-arrow-up-right ms-2" style={{fontSize: '0.9rem'}}></i>
+                      </button>
+                    </div>
                     <p><strong>Provincia:</strong> {offerta.Provincia}</p>
                     <p><strong>Stipendio:</strong> €{offerta.stipendio || 'N/A'}</p>
                     <p><strong>Benefit:</strong> {offerta.benefit || 'N/A'}</p>

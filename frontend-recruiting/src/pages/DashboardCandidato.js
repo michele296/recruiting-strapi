@@ -11,6 +11,7 @@ const DashboardCandidato = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifiche, setNotifiche] = useState([]);
+  const [colloquioSelezionato, setColloquioSelezionato] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -208,7 +209,8 @@ const renderDashboardOverview = () => (
             offerteCompatibili.slice(0, 3).map((offerta) => (
               <div key={`offerta-${offerta.id || Math.random()}`} className="quick-item">
                 <div>
-                  <div className="item-title">{offerta.tipo_contratto}</div>
+                  <div className="item-title">{offerta.info || 'Offerta di lavoro'}</div>
+                  <div className="item-subtitle"><strong>{offerta.tipo_contratto}</strong></div>
                   <div className="item-subtitle">
                     {offerta.Provincia} • €{offerta.stipendio || 'N/A'}
                   </div>
@@ -293,12 +295,13 @@ const renderOfferte = () => (
           <div key={`offerta-detail-${offerta.id || Math.random()}`} className="col-md-6 col-lg-4 mb-4">
             <div className="card h-100">
               <div className="card-body">
-                <h5 className="card-title">{offerta.tipo_contratto}</h5>
+                <h5 className="card-title">{offerta.info || 'Offerta di lavoro'}</h5>
+                <p className="mb-2"><strong>Tipo contratto:</strong> {offerta.tipo_contratto}</p>
                 <p className="card-text">
                   <strong>Provincia:</strong> {offerta.Provincia}<br/>
                   <strong>Stipendio:</strong> €{offerta.stipendio || 'N/A'}<br/>
                   <strong>Benefit:</strong> {offerta.benefit || 'N/A'}<br />
-                  <strong>Azienda:</strong> {offerta.azienda || 'N/A'}
+                  <strong>Azienda:</strong> {offerta.utente_aziendale?.azienda?.Nome || offerta.azienda?.Nome || 'N/A'}
                 </p>
                 <button 
                   className="btn w-100"
@@ -549,12 +552,16 @@ const renderNotifiche = () => {
     </div>
   );
 };
-// Aggiungi questa funzione dopo le altre funzioni helper (prima di renderContent)
+// Funzione per visualizzare i dettagli del colloquio
 const handleViewColloquio = (candidatura) => {
-  const dataColloquio = new Date(candidatura.data_colloquio).toLocaleString('it-IT');
-  const infoColloquio = candidatura.info_colloquio || 'Nessuna informazione aggiuntiva';
-  
-  alert(`COLLOQUIO PROGRAMMATO\n\nData e ora: ${dataColloquio}\n\nInformazioni:\n${infoColloquio}`);
+  setColloquioSelezionato(candidatura);
+  setActiveSection('colloquio');
+};
+
+// Funzione per chiudere la visualizzazione del colloquio
+const handleCloseColloquio = () => {
+  setColloquioSelezionato(null);
+  setActiveSection('candidature');
 };
 
 const handleMarkAsRead = async (notificaId) => {
@@ -587,6 +594,79 @@ const handleMarkAsRead = async (notificaId) => {
     alert('Errore nell\'aggiornamento della notifica');
   }
 };
+// Funzione per renderizzare i dettagli del colloquio
+const renderColloquio = () => {
+  if (!colloquioSelezionato) return null;
+  
+  const dataColloquio = new Date(colloquioSelezionato.data_colloquio).toLocaleString('it-IT');
+  const infoColloquio = colloquioSelezionato.info_colloquio || 'Nessuna informazione aggiuntiva';
+  
+  return (
+    <div className="colloquio-section">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2><i className="bi bi-calendar-event me-2"></i>Dettagli Colloquio</h2>
+        <button 
+          className="btn"
+          style={{
+            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '0.5rem 1rem'
+          }}
+          onClick={handleCloseColloquio}
+        >
+          <i className="bi bi-arrow-left me-2"></i>
+          Torna alle Candidature
+        </button>
+      </div>
+      
+      <div className="card shadow-sm mb-4">
+        <div className="card-header text-white" style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'}}>
+          <h5 className="card-title mb-0">
+            <i className="bi bi-briefcase me-2"></i>
+            {colloquioSelezionato.offerta?.tipo_contratto || 'Posizione non specificata'}
+          </h5>
+        </div>
+        <div className="card-body">
+          <div className="row">
+            <div className="col-md-6">
+              <h6 className="text-muted mb-3">INFORMAZIONI COLLOQUIO</h6>
+              <p>
+                <i className="bi bi-calendar-date me-2 text-primary"></i>
+                <strong>Data e ora:</strong> {dataColloquio}
+              </p>
+              <p>
+                <i className="bi bi-geo-alt me-2 text-danger"></i>
+                <strong>Azienda:</strong> {colloquioSelezionato.offerta?.utente_aziendale?.azienda?.Nome || colloquioSelezionato.offerta?.azienda?.Nome || 'N/A'}
+              </p>
+              <p>
+                <i className="bi bi-building me-2 text-success"></i>
+                <strong>Provincia:</strong> {colloquioSelezionato.offerta?.Provincia || 'N/A'}
+              </p>
+            </div>
+            <div className="col-md-6">
+              <h6 className="text-muted mb-3">DETTAGLI AGGIUNTIVI</h6>
+              <div className="p-3 bg-light rounded">
+                <p className="mb-0">
+                  <i className="bi bi-info-circle me-2 text-info"></i>
+                  <strong>Informazioni:</strong>
+                </p>
+                <p className="mt-2 mb-0">{infoColloquio}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="alert alert-info mt-4">
+            <i className="bi bi-lightbulb me-2"></i>
+            <strong>Suggerimento:</strong> Ricordati di prepararti adeguatamente per il colloquio. Porta con te il tuo curriculum e arriva con qualche minuto di anticipo.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const renderContent = () => {
   switch (activeSection) {
     case 'candidature':
@@ -599,6 +679,8 @@ const renderContent = () => {
       return renderFormazione();
     case 'notifiche':
       return renderNotifiche();
+    case 'colloquio':
+      return renderColloquio();
     default:
       return renderDashboardOverview();
   }
@@ -683,6 +765,7 @@ const renderContent = () => {
               {activeSection === 'profilo' && 'Il Mio Profilo'}
               {activeSection === 'formazione' && 'Formazione'}
               {activeSection === 'notifiche' && 'Notifiche'}
+              {activeSection === 'colloquio' && 'Dettagli Colloquio'}
             </h1>
           </div>
         <div className="notification-wrapper ms-auto position-relative">

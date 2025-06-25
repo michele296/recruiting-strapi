@@ -82,14 +82,25 @@ const DashboardAzienda = () => {
         setOfferte(data.azienda.offertas || []);
         setUtentiAziendali(data.azienda.utenti_aziendali || []);
         
-        // Estrai candidature da tutte le offerte
+        // Estrai candidature da tutte le offerte con dettagli completi
         const tutteCandidature = [];
-        data.azienda.offertas?.forEach(offerta => {
+        for (const offerta of data.azienda.offertas || []) {
+          // Ottieni i dettagli completi dell'offerta
+          let dettagliOfferta;
+          try {
+            const responseDettagli = await fetch(`http://localhost:1337/api/offerta/${offerta.id}/dettagli`);
+            if (responseDettagli.ok) {
+              dettagliOfferta = await responseDettagli.json();
+            }
+          } catch (error) {
+            console.error(`Errore nel recupero dettagli offerta ${offerta.id}:`, error);
+          }
+          
           offerta.candidaturas?.forEach(candidatura => {
             tutteCandidature.push({
               id: candidatura.id,
               candidato: `${candidatura.utente_candidato?.Nome || 'N/A'} ${candidatura.utente_candidato?.Cognome || ''}`.trim(),
-              offerta: offerta.info || 'N/A',
+              offerta: dettagliOfferta?.info || offerta.info || offerta.tipo_contratto || 'N/A',
               stato: candidatura.Stato || 'in_attesa',
               data: candidatura.data_candidatura?.split('T')[0] || new Date().toISOString().split('T')[0],
               offertaId: offerta.id,
@@ -98,7 +109,7 @@ const DashboardAzienda = () => {
               info_colloquio: candidatura.info_colloquio
             });
           });
-        });
+        }
         setCandidature(tutteCandidature);
       }
     } catch (error) {
@@ -469,7 +480,17 @@ const DashboardAzienda = () => {
             {candidature.map(candidatura => (
               <tr key={candidatura.id}>
                 <td>{candidatura.candidato}</td>
-                <td>{candidatura.offerta}</td>
+                <td>
+                  <button 
+                    className="btn btn-link p-0 text-decoration-none d-flex align-items-center"
+                    style={{color: '#667eea', fontWeight: 'bold'}}
+                    onClick={() => classificaCandidatiOfferta(candidatura.offertaId)}
+                  >
+                    <i className="bi bi-bar-chart me-2" style={{fontSize: '0.9rem'}}></i>
+                    {candidatura.offerta}
+                    <i className="bi bi-box-arrow-up-right ms-2" style={{fontSize: '0.8rem'}}></i>
+                  </button>
+                </td>
                 <td>{new Date(candidatura.data).toLocaleDateString()}</td>
                 <td>
                   <span className={`status ${candidatura.stato}`}>
@@ -824,20 +845,24 @@ const DashboardAzienda = () => {
                   <td>{utente.Ruolo}</td>
                   <td>
                     {utente.Ruolo !== 'REFERENTE' ? (
-                      <div className="btn-group btn-group-sm">
+                      <div className="d-flex gap-2 align-items-center">
+                        <div className="d-flex align-items-center gap-1">
+                          <i className="bi bi-person-gear text-primary"></i>
+                          <select 
+                            className="form-select form-select-sm"
+                            value={utente.Ruolo}
+                            onChange={(e) => {
+                              if (e.target.value !== utente.Ruolo) {
+                                gestisciUtente(utente.id, 'modifica_ruolo', e.target.value);
+                              }
+                            }}
+                          >
+                            <option value="AMMINISTRATORE">Amministratore</option>
+                            <option value="ORDINARIO">Ordinario</option>
+                          </select>
+                        </div>
                         <button 
-                          className="btn btn-outline-warning"
-                          onClick={() => {
-                            const nuovoRuolo = prompt('Nuovo ruolo (AMMINISTRATORE/ORDINARIO):');
-                            if (nuovoRuolo && ['AMMINISTRATORE', 'ORDINARIO'].includes(nuovoRuolo.toUpperCase())) {
-                              gestisciUtente(utente.id, 'modifica_ruolo', nuovoRuolo.toUpperCase());
-                            }
-                          }}
-                        >
-                          <i className="bi bi-pencil"></i>
-                        </button>
-                        <button 
-                          className="btn btn-outline-danger"
+                          className="btn btn-outline-danger btn-sm"
                           onClick={() => {
                             if (window.confirm('Sei sicuro di voler eliminare questo utente?')) {
                               gestisciUtente(utente.id, 'elimina');
