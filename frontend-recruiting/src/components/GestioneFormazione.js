@@ -63,7 +63,7 @@ useEffect(() => {
       
       // Fetch dati candidato e formazione disponibile in parallelo
       const [candidatoResponse, formazioneResponse] = await Promise.all([
-        fetch(`http://localhost:1337/api/utente-candidato/${candidatoId}/info-completa`),
+        fetch(`http://localhost:1337/api/ottieni-candidato/${candidatoId}`),
         fetch('http://localhost:1337/api/formazione')
       ]);
 
@@ -71,8 +71,27 @@ useEffect(() => {
         throw new Error('Errore nel recupero dei dati');
       }
 
-      const candidatoData = await candidatoResponse.json();
+      const candidatoResponse_data = await candidatoResponse.json();
       const formazioneData = await formazioneResponse.json();
+      
+      // Trasforma i dati per mantenere la compatibilità
+      const candidatoData = {
+        candidato: candidatoResponse_data.candidato,
+        diplomi: candidatoResponse_data.candidato.ha_diplomas?.map(hd => ({
+          ...hd,
+          diploma: hd.diploma,
+          scuola: hd.scuola
+        })) || [],
+        lauree: candidatoResponse_data.candidato.ha_laureas?.map(hl => ({
+          ...hl,
+          laurea: hl.laurea,
+          universita: hl.universita
+        })) || [],
+        attestati: candidatoResponse_data.candidato.ha_attestatoes?.map(ha => ({
+          ...ha,
+          attestato: ha.attestato
+        })) || []
+      };
       
       setCandidatoData(candidatoData);
       setFormazioneDisponibile(formazioneData);
@@ -252,6 +271,34 @@ useEffect(() => {
     } catch (error) {
       console.error('Errore:', error);
       alert('Errore durante il salvataggio: ' + error.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCVUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('cv', file);
+
+    try {
+      setSubmitting(true);
+      const response = await fetch(`http://localhost:1337/api/inserisci-cv/${candidatoId}`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Errore nel caricamento del CV');
+      }
+
+      alert('CV caricato con successo!');
+      await fetchInitialData();
+    } catch (error) {
+      console.error('Errore upload CV:', error);
+      alert('Errore nel caricamento del CV');
     } finally {
       setSubmitting(false);
     }
@@ -474,6 +521,76 @@ useEffect(() => {
                 <div className="text-center py-4">
                   <i className="bi bi-mortarboard display-1 text-muted"></i>
                   <h5 className="text-muted mt-3">Nessuna laurea inserita</h5>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* CV Section */}
+        <div className="row mb-5">
+          <div className="col-12">
+            <div className="bg-white rounded-4 shadow p-4">
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <h3 className="fw-bold text-dark mb-0">
+                  <i className="bi bi-file-earmark-pdf me-2" style={{color: '#f5576c'}}></i>
+                  Curriculum Vitae
+                </h3>
+                <input 
+                  type="file" 
+                  id="cv-upload" 
+                  accept=".pdf,.doc,.docx" 
+                  style={{display: 'none'}}
+                  onChange={handleCVUpload}
+                />
+                <button 
+                  className="btn fw-semibold"
+                  style={{
+                    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '0.75rem 1.5rem'
+                  }}
+                  onClick={() => document.getElementById('cv-upload').click()}
+                >
+                  <i className="bi bi-upload me-2"></i>
+                  {candidatoData?.candidato?.CV ? 'Aggiorna CV' : 'Carica CV'}
+                </button>
+              </div>
+              
+              {candidatoData?.candidato?.CV ? (
+                <div className="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                  <div className="d-flex align-items-center">
+                    <i className="bi bi-file-earmark-pdf fs-2 text-danger me-3"></i>
+                    <div>
+                      <h6 className="mb-1 fw-bold">CV Caricato</h6>
+                      <small className="text-muted">{candidatoData.candidato.CV.name || 'curriculum.pdf'}</small>
+                    </div>
+                  </div>
+                  <div className="d-flex gap-2">
+                    <a 
+                      href={`http://localhost:1337${candidatoData.candidato.CV.url}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-sm btn-outline-primary"
+                    >
+                      <i className="bi bi-eye me-1"></i> Visualizza
+                    </a>
+                    <a 
+                      href={`http://localhost:1337${candidatoData.candidato.CV.url}`}
+                      download
+                      className="btn btn-sm btn-outline-success"
+                    >
+                      <i className="bi bi-download me-1"></i> Scarica
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <i className="bi bi-file-earmark-pdf display-1 text-muted"></i>
+                  <h5 className="text-muted mt-3">Nessun CV caricato</h5>
+                  <p className="text-muted">Carica il tuo curriculum in formato PDF, DOC o DOCX</p>
                 </div>
               )}
             </div>

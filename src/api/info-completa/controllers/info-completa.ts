@@ -35,7 +35,16 @@ module.exports = {
           },
           candidaturas: {
             populate: {
-              offerta: true
+              offerta: true,
+              valutaziones: {
+                populate: {
+                  utente_aziendale: {
+                    populate: {
+                      azienda: true
+                    }
+                  }
+                }
+              }
             }
           }
         }

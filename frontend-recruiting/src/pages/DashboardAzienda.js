@@ -40,6 +40,10 @@ const DashboardAzienda = () => {
   const [loading, setLoading] = useState(true);
   const [formazione, setFormazione] = useState({ diplomi: [], lauree: [], attestati: [] });
   const [colloquioForm, setColloquioForm] = useState({ show: false, candidaturaId: null });
+  const [colloqui, setColloqui] = useState([]);
+  const [filtroColloqui, setFiltroColloqui] = useState({ offertaId: '', dataInizio: '', dataFine: '' });
+  const [valutazioneForm, setValutazioneForm] = useState({ show: false, candidaturaId: null, tipo: null });
+  const [showSettings, setShowSettings] = useState(false);
 
   // Permessi basati sul ruolo
   const isReferente = userData.ruolo === 'REFERENTE';
@@ -301,11 +305,90 @@ const DashboardAzienda = () => {
     }
   };
 
+  const loadColloqui = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (filtroColloqui.offertaId) params.append('offertaId', filtroColloqui.offertaId);
+      if (filtroColloqui.dataInizio) params.append('dataInizio', filtroColloqui.dataInizio);
+      if (filtroColloqui.dataFine) params.append('dataFine', filtroColloqui.dataFine);
+      
+      const response = await fetch(`http://localhost:1337/api/ottieni-colloqui/${userData.aziendaId}?${params}`);
+      const data = await response.json();
+      setColloqui(data.colloqui || []);
+    } catch (error) {
+      console.error('Errore caricamento colloqui:', error);
+      alert('Errore nel caricamento dei colloqui');
+    }
+  };
+
+  const renderImpostazioni = () => (
+    <div className="section-card">
+      <h2>Impostazioni Account</h2>
+      <div className="card">
+        <div className="card-body">
+          <h5 className="card-title"><i className="bi bi-shield-lock me-2"></i>Cambia Password</h5>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            try {
+              const response = await fetch('http://localhost:1337/api/cambia-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  email: userData.email || `${userData.nome.toLowerCase()}.${userData.cognome.toLowerCase()}@azienda.com`,
+                  vecchiaPassword: formData.get('vecchiaPassword'),
+                  nuovaPassword: formData.get('nuovaPassword')
+                })
+              });
+              if (response.ok) {
+                alert('Password cambiata con successo!');
+                e.target.reset();
+              } else {
+                const error = await response.json();
+                alert(error.error?.message || 'Errore nel cambio password');
+              }
+            } catch (error) {
+              alert('Errore nel cambio password');
+            }
+          }}>
+            <div className="row">
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label">Vecchia Password</label>
+                  <input type="password" name="vecchiaPassword" className="form-control" required />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label">Nuova Password</label>
+                  <input type="password" name="nuovaPassword" className="form-control" required />
+                </div>
+              </div>
+            </div>
+            <button type="submit" className="view-all-btn" style={{maxWidth: '200px'}}>
+              <i className="bi bi-shield-check me-2"></i>Cambia Password
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderNavigation = () => (
-    <div className="sidebar-nav">
+    <div className="sidebar-nav" style={{overflowY: 'auto', maxHeight: 'calc(100vh - 200px)'}}>
+      <button
+        className={`nav-item ${activeSection === 'impostazioni' ? 'active' : ''}`}
+        onClick={() => setActiveSection('impostazioni')}
+        style={{marginBottom: '0.5rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', padding: '0.5rem 1rem', fontSize: '0.9rem'}}
+      >
+        <i className="bi bi-gear"></i>
+        Impostazioni
+      </button>
+      
       <button
         className={`nav-item ${activeSection === 'dashboard' ? 'active' : ''}`}
         onClick={() => setActiveSection('dashboard')}
+        style={{padding: '0.5rem 1rem', fontSize: '0.9rem'}}
       >
         <i className="bi bi-speedometer2"></i>
         Dashboard
@@ -314,6 +397,7 @@ const DashboardAzienda = () => {
       <button
         className={`nav-item ${activeSection === 'candidature' ? 'active' : ''}`}
         onClick={() => setActiveSection('candidature')}
+        style={{padding: '0.5rem 1rem', fontSize: '0.9rem'}}
       >
         <i className="bi bi-people-fill"></i>
         Candidature
@@ -325,18 +409,34 @@ const DashboardAzienda = () => {
       <button
         className={`nav-item ${activeSection === 'offerte' ? 'active' : ''}`}
         onClick={() => setActiveSection('offerte')}
+        style={{padding: '0.5rem 1rem', fontSize: '0.9rem'}}
       >
         <i className="bi bi-briefcase-fill"></i>
-        Offerte di Lavoro
+        Offerte
       </button>
 
       {canCreateOfferte && (
         <button
           className={`nav-item ${activeSection === 'crea-offerta' ? 'active' : ''}`}
           onClick={() => setActiveSection('crea-offerta')}
+          style={{padding: '0.5rem 1rem', fontSize: '0.9rem'}}
         >
           <i className="bi bi-plus-circle-fill"></i>
           Crea Offerta
+        </button>
+      )}
+
+      {canEvaluate && (
+        <button
+          className={`nav-item ${activeSection === 'colloqui' ? 'active' : ''}`}
+          onClick={() => {
+            setActiveSection('colloqui');
+            loadColloqui();
+          }}
+          style={{padding: '0.5rem 1rem', fontSize: '0.9rem'}}
+        >
+          <i className="bi bi-calendar-event"></i>
+          Colloqui
         </button>
       )}
 
@@ -345,25 +445,28 @@ const DashboardAzienda = () => {
           <button
             className={`nav-item ${activeSection === 'gestisci-utenti' ? 'active' : ''}`}
             onClick={() => setActiveSection('gestisci-utenti')}
+            style={{padding: '0.5rem 1rem', fontSize: '0.9rem'}}
           >
             <i className="bi bi-person-gear"></i>
-            Gestisci Utenti
+            Utenti
           </button>
 
           <button
             className={`nav-item ${activeSection === 'crea-utente' ? 'active' : ''}`}
             onClick={() => setActiveSection('crea-utente')}
+            style={{padding: '0.5rem 1rem', fontSize: '0.9rem'}}
           >
             <i className="bi bi-person-plus"></i>
-            Crea Utente
+            Nuovo Utente
           </button>
 
           <button
             className={`nav-item ${activeSection === 'profilo-azienda' ? 'active' : ''}`}
             onClick={() => setActiveSection('profilo-azienda')}
+            style={{padding: '0.5rem 1rem', fontSize: '0.9rem'}}
           >
             <i className="bi bi-building-gear"></i>
-            Profilo Azienda
+            Profilo
           </button>
         </>
       )}
@@ -516,35 +619,13 @@ const DashboardAzienda = () => {
                         </button>
                         <button 
                           className="btn btn-outline-success"
-                          onClick={() => {
-                            const motivazione = prompt('Motivazione accettazione:');
-                            if (motivazione) {
-                              valutaCandidatura(candidatura.id, {
-                                tecnica: 8,
-                                soft: 8,
-                                motivazione,
-                                note: '',
-                                stato: 'accettata'
-                              });
-                            }
-                          }}
+                          onClick={() => setValutazioneForm({ show: true, candidaturaId: candidatura.id, tipo: 'accettata' })}
                         >
                           <i className="bi bi-check-circle"></i>
                         </button>
                         <button 
                           className="btn btn-outline-danger"
-                          onClick={() => {
-                            const motivazione = prompt('Motivazione rifiuto:');
-                            if (motivazione) {
-                              valutaCandidatura(candidatura.id, {
-                                tecnica: 5,
-                                soft: 5,
-                                motivazione,
-                                note: '',
-                                stato: 'rifiutata'
-                              });
-                            }
-                          }}
+                          onClick={() => setValutazioneForm({ show: true, candidaturaId: candidatura.id, tipo: 'rifiutata' })}
                         >
                           <i className="bi bi-x-circle"></i>
                         </button>
@@ -1034,12 +1115,52 @@ const DashboardAzienda = () => {
                     </span>
                   </td>
                   <td>
-                    <button 
-                      className="btn btn-sm btn-outline-info"
-                      onClick={() => visualizzaCandidato(candidato.candidato_id)}
-                    >
-                      Dettagli
-                    </button>
+                    <div className="btn-group btn-group-sm">
+                      <button 
+                        className="btn btn-outline-info"
+                        onClick={() => visualizzaCandidato(candidato.candidato_id)}
+                      >
+                        <i className="bi bi-eye"></i>
+                      </button>
+                      {!isOrdinario && (
+                        <>
+                          <button 
+                            className="btn btn-outline-success"
+                            onClick={() => {
+                              const candidaturaId = candidature.find(c => c.candidatoId === candidato.candidato_id)?.id;
+                              if (candidaturaId) {
+                                setColloquioForm({ show: true, candidaturaId });
+                              }
+                            }}
+                            title="Fissa Colloquio"
+                          >
+                            <i className="bi bi-calendar-plus"></i>
+                          </button>
+                          <button 
+                            className="btn btn-outline-success"
+                            onClick={() => {
+                              const candidaturaId = candidature.find(c => c.candidatoId === candidato.candidato_id)?.id;
+                              if (candidaturaId) {
+                                setValutazioneForm({ show: true, candidaturaId, tipo: 'accettata' });
+                              }
+                            }}
+                          >
+                            <i className="bi bi-check-circle"></i>
+                          </button>
+                          <button 
+                            className="btn btn-outline-danger"
+                            onClick={() => {
+                              const candidaturaId = candidature.find(c => c.candidatoId === candidato.candidato_id)?.id;
+                              if (candidaturaId) {
+                                setValutazioneForm({ show: true, candidaturaId, tipo: 'rifiutata' });
+                              }
+                            }}
+                          >
+                            <i className="bi bi-x-circle"></i>
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -1146,6 +1267,78 @@ const DashboardAzienda = () => {
             <p><strong>Cognome:</strong> {dettaglioCandidato.Cognome}</p>
             <p><strong>Email:</strong> {dettaglioCandidato.Email}</p>
             <p><strong>Provincia:</strong> {dettaglioCandidato.Provincia}</p>
+            
+            {/* CV Section */}
+            {dettaglioCandidato.CV && (
+              <div className="mt-4">
+                <h5><i className="bi bi-file-earmark-pdf me-2"></i>Curriculum Vitae</h5>
+                <div className="d-flex align-items-center p-3 bg-light rounded">
+                  <i className="bi bi-file-earmark-pdf fs-3 text-danger me-3"></i>
+                  <div className="flex-grow-1">
+                    <h6 className="mb-1">{dettaglioCandidato.CV.name || 'curriculum.pdf'}</h6>
+                    <small className="text-muted">CV del candidato</small>
+                  </div>
+                  <div className="d-flex gap-2">
+                    <a 
+                      href={`http://localhost:1337${dettaglioCandidato.CV.url}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-sm btn-outline-primary"
+                    >
+                      <i className="bi bi-eye me-1"></i> Visualizza
+                    </a>
+                    <a 
+                      href={`http://localhost:1337${dettaglioCandidato.CV.url}`}
+                      download
+                      className="btn btn-sm btn-outline-success"
+                    >
+                      <i className="bi bi-download me-1"></i> Scarica
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Portfolio Links */}
+            {(dettaglioCandidato.github || dettaglioCandidato.linkedin || dettaglioCandidato.altri_link) && (
+              <div className="mt-4">
+                <h5><i className="bi bi-link-45deg me-2"></i>Portfolio e Link</h5>
+                <div className="p-3 bg-light rounded">
+                  {dettaglioCandidato.github && (
+                    <div className="mb-2">
+                      <strong>GitHub:</strong>
+                      <a href={dettaglioCandidato.github} target="_blank" rel="noopener noreferrer" className="ms-2">
+                        <i className="bi bi-github me-1"></i>{dettaglioCandidato.github}
+                      </a>
+                    </div>
+                  )}
+                  
+                  {dettaglioCandidato.linkedin && (
+                    <div className="mb-2">
+                      <strong>LinkedIn:</strong>
+                      <a href={dettaglioCandidato.linkedin} target="_blank" rel="noopener noreferrer" className="ms-2">
+                        <i className="bi bi-linkedin me-1"></i>{dettaglioCandidato.linkedin}
+                      </a>
+                    </div>
+                  )}
+                  
+                  {dettaglioCandidato.altri_link && (
+                    <div>
+                      <strong>Altri Link:</strong>
+                      <div className="mt-1">
+                        {dettaglioCandidato.altri_link.split('\n').filter(link => link.trim()).map((link, index) => (
+                          <div key={index}>
+                            <a href={link.trim()} target="_blank" rel="noopener noreferrer">
+                              <i className="bi bi-link me-1"></i>{link.trim()}
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           
           <div className="col-md-6">
@@ -1186,9 +1379,256 @@ const DashboardAzienda = () => {
     );
   };
 
+  const renderColloqui = () => {
+    if (!canEvaluate) {
+      return (
+        <div className="alert alert-warning">
+          Non hai i permessi per visualizzare i colloqui.
+        </div>
+      );
+    }
+
+    return (
+      <div className="colloqui-section">
+        <h2>Gestione Colloqui</h2>
+        
+        {/* Filtri */}
+        <div className="card mb-4">
+          <div className="card-body">
+            <h5 className="card-title">Filtri</h5>
+            <div className="row">
+              <div className="col-md-4">
+                <label className="form-label">Offerta</label>
+                <select 
+                  className="form-select"
+                  value={filtroColloqui.offertaId}
+                  onChange={(e) => setFiltroColloqui({...filtroColloqui, offertaId: e.target.value})}
+                >
+                  <option value="">Tutte le offerte</option>
+                  {offerte.map(offerta => (
+                    <option key={offerta.id} value={offerta.id}>
+                      {offerta.info || offerta.tipo_contratto}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-md-3">
+                <label className="form-label">Data Inizio</label>
+                <input 
+                  type="date" 
+                  className="form-control"
+                  value={filtroColloqui.dataInizio}
+                  onChange={(e) => setFiltroColloqui({...filtroColloqui, dataInizio: e.target.value})}
+                />
+              </div>
+              <div className="col-md-3">
+                <label className="form-label">Data Fine</label>
+                <input 
+                  type="date" 
+                  className="form-control"
+                  value={filtroColloqui.dataFine}
+                  onChange={(e) => setFiltroColloqui({...filtroColloqui, dataFine: e.target.value})}
+                />
+              </div>
+              <div className="col-md-2 d-flex align-items-end">
+                <button 
+                  className="view-all-btn w-100"
+                  onClick={loadColloqui}
+                >
+                  <i className="bi bi-search me-1"></i> Filtra
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabella Colloqui */}
+        <div className="table-responsive">
+          <table className="table table-hover">
+            <thead>
+              <tr>
+                <th>Data e Ora</th>
+                <th>Candidato</th>
+                <th>Offerta</th>
+                <th>Stato</th>
+                <th>Azioni</th>
+              </tr>
+            </thead>
+            <tbody>
+              {colloqui.map(colloquio => (
+                <tr key={colloquio.id}>
+                  <td>
+                    <strong>{new Date(colloquio.data_colloquio).toLocaleDateString('it-IT')}</strong><br/>
+                    <small className="text-muted">{new Date(colloquio.data_colloquio).toLocaleTimeString('it-IT', {hour: '2-digit', minute: '2-digit'})}</small>
+                  </td>
+                  <td>
+                    {colloquio.candidato.nome} {colloquio.candidato.cognome}<br/>
+                    <small className="text-muted">{colloquio.candidato.email}</small>
+                  </td>
+                  <td>
+                    {colloquio.offerta.info || colloquio.offerta.tipo_contratto}<br/>
+                    <small className="text-muted">{colloquio.offerta.provincia}</small>
+                  </td>
+                  <td>
+                    <span className={`status ${colloquio.stato}`}>
+                      {colloquio.stato.replace('_', ' ')}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="btn-group btn-group-sm">
+                      <button 
+                        className="btn btn-outline-info"
+                        onClick={() => visualizzaCandidato(colloquio.candidato.id)}
+                        title="Visualizza Candidato"
+                      >
+                        <i className="bi bi-eye"></i>
+                      </button>
+                      <button 
+                        className="btn btn-outline-warning"
+                        onClick={() => setColloquioForm({ show: true, candidaturaId: colloquio.id })}
+                        title="Modifica Colloquio"
+                      >
+                        <i className="bi bi-pencil"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          {colloqui.length === 0 && (
+            <div className="text-center py-5">
+              <i className="bi bi-calendar-x display-1 text-muted"></i>
+              <h4 className="mt-3 text-muted">Nessun colloquio trovato</h4>
+              <p className="text-muted">Non ci sono colloqui programmati con i filtri selezionati</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderValutazione = () => {
+    if (!valutazioneForm.show) return null;
+
+    const candidaturaCorrente = candidature.find(c => c.id === valutazioneForm.candidaturaId);
+    const isAccettazione = valutazioneForm.tipo === 'accettata';
+
+    return (
+      <div className="section-card">
+        <h2 className="mb-4">
+          <i className={`bi ${isAccettazione ? 'bi-check-circle text-success' : 'bi-x-circle text-danger'} me-2`}></i>
+          {isAccettazione ? 'Accetta Candidatura' : 'Rifiuta Candidatura'}
+        </h2>
+        
+        {candidaturaCorrente && (
+          <div className="alert alert-info mb-4">
+            <h5><i className="bi bi-info-circle me-2"></i>Dettagli Candidatura</h5>
+            <p className="mb-1"><strong>Candidato:</strong> {candidaturaCorrente.candidato}</p>
+            <p className="mb-0"><strong>Offerta:</strong> {candidaturaCorrente.offerta}</p>
+          </div>
+        )}
+        
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          const valutazioneData = {
+            tecnica: parseInt(formData.get('valutazione_tecnica')) || (isAccettazione ? 8 : 5),
+            soft: parseInt(formData.get('valutazione_soft')) || (isAccettazione ? 8 : 5),
+            motivazione: formData.get('motivazione'),
+            note: formData.get('note_private') || '',
+            stato: valutazioneForm.tipo
+          };
+          valutaCandidatura(valutazioneForm.candidaturaId, valutazioneData);
+          setValutazioneForm({ show: false, candidaturaId: null, tipo: null });
+        }}>
+          <div className="form-card p-4 mb-4">
+            <h4 className="mb-3">Valutazione Candidato</h4>
+            
+            <div className="row">
+              <div className="col-md-6">
+                <div className="mb-4">
+                  <label className="form-label">Valutazione Tecnica (1-10)</label>
+                  <input 
+                    type="number" 
+                    name="valutazione_tecnica" 
+                    className="form-control" 
+                    min="1" 
+                    max="10" 
+                    defaultValue={isAccettazione ? 8 : 5}
+                    required 
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="mb-4">
+                  <label className="form-label">Valutazione Soft Skills (1-10)</label>
+                  <input 
+                    type="number" 
+                    name="valutazione_soft" 
+                    className="form-control" 
+                    min="1" 
+                    max="10" 
+                    defaultValue={isAccettazione ? 8 : 5}
+                    required 
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <label className="form-label">Motivazione *</label>
+              <textarea 
+                name="motivazione" 
+                className="form-control" 
+                rows="4" 
+                placeholder={isAccettazione ? 'Descrivi i motivi per cui accetti questa candidatura...' : 'Descrivi i motivi per cui rifiuti questa candidatura...'}
+                required
+              ></textarea>
+            </div>
+            
+            <div className="mb-3">
+              <label className="form-label">Note Private (opzionale)</label>
+              <textarea 
+                name="note_private" 
+                className="form-control" 
+                rows="3" 
+                placeholder="Note interne per l'azienda (non visibili al candidato)..."
+              ></textarea>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <button 
+              type="submit" 
+              className={`view-all-btn me-3 ${isAccettazione ? 'bg-success' : 'bg-danger'}`}
+              style={{maxWidth: '200px', backgroundColor: isAccettazione ? '#28a745' : '#dc3545'}}
+            >
+              <i className={`bi ${isAccettazione ? 'bi-check-circle' : 'bi-x-circle'} me-2`}></i>
+              {isAccettazione ? 'Accetta Candidatura' : 'Rifiuta Candidatura'}
+            </button>
+            <button 
+              type="button" 
+              className="btn btn-outline-secondary" 
+              style={{maxWidth: '200px'}}
+              onClick={() => setValutazioneForm({ show: false, candidaturaId: null, tipo: null })}
+            >
+              <i className="bi bi-x-circle me-2"></i> Annulla
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  };
+
   const renderContent = () => {
     if (colloquioForm.show) {
       return renderFissaColloquio();
+    }
+    
+    if (valutazioneForm.show) {
+      return renderValutazione();
     }
     
     switch (activeSection) {
@@ -1201,6 +1641,8 @@ const DashboardAzienda = () => {
       case 'profilo-azienda': return renderProfiloAzienda();
       case 'classifica': return renderClassifica();
       case 'dettaglio-candidato': return renderDettaglioCandidato();
+      case 'colloqui': return renderColloqui();
+      case 'impostazioni': return renderImpostazioni();
       default: return renderDashboard();
     }
   };

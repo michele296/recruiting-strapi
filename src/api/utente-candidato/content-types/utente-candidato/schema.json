@@ -95,6 +95,25 @@
       "relation": "oneToMany",
       "target": "api::candidatura.candidatura",
       "mappedBy": "utente_candidato"
+    },
+    "CV": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "github": {
+      "type": "string"
+    },
+    "linkedin": {
+      "type": "string"
+    },
+    "altri_link": {
+      "type": "string"
     }
   }
 }

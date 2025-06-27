@@ -29,7 +29,9 @@ export default {
               attestato: true,
             },
           },
+          CV: true
         },
+        select: ['*']
       });
 
       if (!candidato) {

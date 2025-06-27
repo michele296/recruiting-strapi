@@ -1121,6 +1121,7 @@ export interface ApiUtenteCandidatoUtenteCandidato
     draftAndPublish: false;
   };
   attributes: {
+    altri_link: Schema.Attribute.String;
     candidaturas: Schema.Attribute.Relation<
       'oneToMany',
       'api::candidatura.candidatura'
@@ -1140,10 +1141,12 @@ export interface ApiUtenteCandidatoUtenteCandidato
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    CV: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     DataDiNascita: Schema.Attribute.Date & Schema.Attribute.Required;
     Email: Schema.Attribute.Email &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
+    github: Schema.Attribute.String;
     ha_attestatoes: Schema.Attribute.Relation<
       'oneToMany',
       'api::ha-attestato.ha-attestato'
@@ -1156,6 +1159,7 @@ export interface ApiUtenteCandidatoUtenteCandidato
       'oneToMany',
       'api::ha-laurea.ha-laurea'
     >;
+    linkedin: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
