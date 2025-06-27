@@ -12,6 +12,8 @@ const LoginCandidato = () => {
     password: '',
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -19,33 +21,35 @@ const LoginCandidato = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
+    if (error) setError('');
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     try {
       const response = await loginUtenteCandidato(formData);  
 
-      // ✅ Verifica che ci sia l'utente nella risposta
       if (!response.user) {
         throw new Error('Risposta del server non valida');
       }
 
       alert(`Benvenuto ${response.user.nome}!`);
 
-      // ✅ Salva solo l'ID del candidato e i dati utente (senza token)
       localStorage.setItem('candidatoId', response.user.id.toString());
       localStorage.setItem('candidato', JSON.stringify(response.user));
       localStorage.setItem('isLoggedIn', 'true');
 
-      console.log('ID candidato salvato:', localStorage.getItem('candidatoId'));
-
-      navigate('/dashboard-candidato'); // Redirect
+      navigate('/dashboard-candidato');
     } catch (error) {
-      console.error(error);
-      alert(error.message || 'Errore nel login');
+      console.error('Errore login:', error);
+      setError(error.message || 'Errore durante il login. Riprova.');
     } finally {
       setLoading(false);
     }
@@ -84,8 +88,16 @@ const LoginCandidato = () => {
         {/* Sezione form */}
         <div className="login-form-section">
           <h2 className="form-title">Accedi come Candidato</h2>
-
-          <form onSubmit={handleSubmit}>
+          
+          {/* Messaggio di errore */}
+          {error && (
+            <div className="alert alert-danger" role="alert">
+              <i className="bi bi-exclamation-triangle-fill me-2"></i>
+              {error}
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit} noValidate>
             <div className="form-group">
               <div className="input-group">
                 <span className="input-group-text">
@@ -94,11 +106,13 @@ const LoginCandidato = () => {
                 <input
                   type="email"
                   name="email"
-                  className="form-control"
+                  className={`form-control ${error ? 'is-invalid' : ''}`}
                   placeholder="La tua email"
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  disabled={loading}
+                  autoComplete="email"
                 />
               </div>
             </div>
@@ -109,29 +123,43 @@ const LoginCandidato = () => {
                   <i className="bi bi-lock-fill"></i>
                 </span>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
-                  className="form-control"
+                  className={`form-control ${error ? 'is-invalid' : ''}`}
                   placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
                   required
+                  disabled={loading}
+                  autoComplete="current-password"
                 />
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={togglePasswordVisibility}
+                  disabled={loading}
+                  aria-label={showPassword ? "Nascondi password" : "Mostra password"}
+                >
+                  <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                </button>
               </div>
             </div>
 
             <button 
               type="submit" 
               className="btn-login candidate-btn"
-              disabled={loading}
+              disabled={loading || !formData.email || !formData.password}
             >
               {loading ? (
                 <>
-                  <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                   Accesso in corso...
                 </>
               ) : (
-                'Accedi'
+                <>
+                  <i className="bi bi-box-arrow-in-right me-2"></i>
+                  Accedi
+                </>
               )}
             </button>
           </form>
@@ -139,7 +167,18 @@ const LoginCandidato = () => {
           <div className="login-footer">
             <p>Non hai ancora un account?</p>
             <Link to="/registra-candidato" className="register-link candidate-link">
+              <i className="bi bi-person-add me-2"></i>
               Registrati come candidato
+            </Link>
+          </div>
+
+          {/* Link di accesso alternativo */}
+          <div className="alternative-login">
+            <hr className="divider" />
+            <p className="text-muted">Oppure</p>
+            <Link to="/login-azienda" className="btn btn-outline-secondary w-100">
+              <i className="bi bi-building me-2"></i>
+              Accedi come Azienda
             </Link>
           </div>
         </div>

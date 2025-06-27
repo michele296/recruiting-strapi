@@ -208,12 +208,7 @@ const LoginAzienda = () => {
             </button>
           </form>
 
-          <div className="form-links">
-            <Link to="/recupera-password" className="forgot-password-link">
-              <i className="bi bi-question-circle me-1"></i>
-              Password dimenticata?
-            </Link>
-          </div>
+
 
           <div className="login-footer">
             <p>Non hai ancora un account aziendale?</p>
