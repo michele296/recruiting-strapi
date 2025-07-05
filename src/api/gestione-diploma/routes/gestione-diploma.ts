@@ -11,8 +11,14 @@ module.exports = {
     },
     {
       method: 'PUT',
-      path: '/gestione-diploma/modifica/:idUtente',
+      path: '/gestione-diploma/modifica/:id',
       handler: 'gestione-diploma.modifica',
+      config: { auth: false },
+    },
+    {
+      method: 'DELETE',
+      path: '/gestione-diploma/rimuovi/:id',
+      handler: 'gestione-diploma.rimuovi',
       config: { auth: false },
     }
   ],

@@ -43,7 +43,9 @@ const DashboardAzienda = () => {
   const [colloqui, setColloqui] = useState([]);
   const [filtroColloqui, setFiltroColloqui] = useState({ offertaId: '', dataInizio: '', dataFine: '' });
   const [valutazioneForm, setValutazioneForm] = useState({ show: false, candidaturaId: null, tipo: null });
+  const [showColloquioWarning, setShowColloquioWarning] = useState({ show: false, candidaturaId: null, tipo: null });
   const [showSettings, setShowSettings] = useState(false);
+  const [filtroCandidature, setFiltroCandidature] = useState({ candidato: '', offerta: '', stato: '' });
 
   // Permessi basati sul ruolo
   const isReferente = userData.ruolo === 'REFERENTE';
@@ -565,10 +567,58 @@ const DashboardAzienda = () => {
     </div>
   );
 
-  const renderCandidature = () => (
-    <div className="candidature-section">
-      <h2>Gestione Candidature</h2>
-      <div className="table-responsive">
+  const renderCandidature = () => {
+    const candidatureFiltrate = candidature.filter(candidatura => {
+      if (filtroCandidature.candidato && !candidatura.candidato.toLowerCase().includes(filtroCandidature.candidato.toLowerCase())) return false;
+      if (filtroCandidature.offerta && !candidatura.offerta.toLowerCase().includes(filtroCandidature.offerta.toLowerCase())) return false;
+      if (filtroCandidature.stato && candidatura.stato !== filtroCandidature.stato) return false;
+      return true;
+    });
+
+    return (
+      <div className="candidature-section">
+        <h2>Gestione Candidature</h2>
+        
+        {/* Filtri */}
+        <div className="card mb-4">
+          <div className="card-body">
+            <h6 className="card-title"><i className="bi bi-funnel me-2"></i>Filtri</h6>
+            <div className="row">
+              <div className="col-md-4">
+                <input 
+                  type="text" 
+                  className="form-control form-control-sm"
+                  placeholder="Nome candidato"
+                  value={filtroCandidature.candidato}
+                  onChange={(e) => setFiltroCandidature({...filtroCandidature, candidato: e.target.value})}
+                />
+              </div>
+              <div className="col-md-4">
+                <input 
+                  type="text" 
+                  className="form-control form-control-sm"
+                  placeholder="Nome offerta"
+                  value={filtroCandidature.offerta}
+                  onChange={(e) => setFiltroCandidature({...filtroCandidature, offerta: e.target.value})}
+                />
+              </div>
+              <div className="col-md-4">
+                <select 
+                  className="form-select form-select-sm"
+                  value={filtroCandidature.stato}
+                  onChange={(e) => setFiltroCandidature({...filtroCandidature, stato: e.target.value})}
+                >
+                  <option value="">Tutti gli stati</option>
+                  <option value="in_attesa">In attesa</option>
+                  <option value="accettata">Accettata</option>
+                  <option value="rifiutata">Rifiutata</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="table-responsive">
         <table className="table table-hover">
           <thead>
             <tr>
@@ -580,7 +630,7 @@ const DashboardAzienda = () => {
             </tr>
           </thead>
           <tbody>
-            {candidature.map(candidatura => (
+            {candidatureFiltrate.map(candidatura => (
               <tr key={candidatura.id}>
                 <td>{candidatura.candidato}</td>
                 <td>
@@ -619,13 +669,25 @@ const DashboardAzienda = () => {
                         </button>
                         <button 
                           className="btn btn-outline-success"
-                          onClick={() => setValutazioneForm({ show: true, candidaturaId: candidatura.id, tipo: 'accettata' })}
+                          onClick={() => {
+                            if (!candidatura.data_colloquio || new Date() < new Date(candidatura.data_colloquio)) {
+                              setShowColloquioWarning({ show: true, candidaturaId: candidatura.id, tipo: 'accettata' });
+                            } else {
+                              setValutazioneForm({ show: true, candidaturaId: candidatura.id, tipo: 'accettata' });
+                            }
+                          }}
                         >
                           <i className="bi bi-check-circle"></i>
                         </button>
                         <button 
                           className="btn btn-outline-danger"
-                          onClick={() => setValutazioneForm({ show: true, candidaturaId: candidatura.id, tipo: 'rifiutata' })}
+                          onClick={() => {
+                            if (!candidatura.data_colloquio || new Date() < new Date(candidatura.data_colloquio)) {
+                              setShowColloquioWarning({ show: true, candidaturaId: candidatura.id, tipo: 'rifiutata' });
+                            } else {
+                              setValutazioneForm({ show: true, candidaturaId: candidatura.id, tipo: 'rifiutata' });
+                            }
+                          }}
                         >
                           <i className="bi bi-x-circle"></i>
                         </button>
@@ -637,9 +699,18 @@ const DashboardAzienda = () => {
             ))}
           </tbody>
         </table>
+        
+        {candidatureFiltrate.length === 0 && candidature.length > 0 && (
+          <div className="text-center py-4">
+            <i className="bi bi-search display-4 text-muted"></i>
+            <h5 className="mt-3 text-muted">Nessuna candidatura trovata</h5>
+            <p className="text-muted">Prova a modificare i filtri di ricerca</p>
+          </div>
+        )}
       </div>
     </div>
-  );
+    );
+  };
 
   const renderOfferte = () => (
     <div className="offerte-section">
@@ -1139,9 +1210,13 @@ const DashboardAzienda = () => {
                           <button 
                             className="btn btn-outline-success"
                             onClick={() => {
-                              const candidaturaId = candidature.find(c => c.candidatoId === candidato.candidato_id)?.id;
-                              if (candidaturaId) {
-                                setValutazioneForm({ show: true, candidaturaId, tipo: 'accettata' });
+                              const candidaturaObj = candidature.find(c => c.candidatoId === candidato.candidato_id);
+                              if (candidaturaObj) {
+                                if (!candidaturaObj.data_colloquio || new Date() < new Date(candidaturaObj.data_colloquio)) {
+                                  setShowColloquioWarning({ show: true, candidaturaId: candidaturaObj.id, tipo: 'accettata' });
+                                } else {
+                                  setValutazioneForm({ show: true, candidaturaId: candidaturaObj.id, tipo: 'accettata' });
+                                }
                               }
                             }}
                           >
@@ -1150,9 +1225,13 @@ const DashboardAzienda = () => {
                           <button 
                             className="btn btn-outline-danger"
                             onClick={() => {
-                              const candidaturaId = candidature.find(c => c.candidatoId === candidato.candidato_id)?.id;
-                              if (candidaturaId) {
-                                setValutazioneForm({ show: true, candidaturaId, tipo: 'rifiutata' });
+                              const candidaturaObj = candidature.find(c => c.candidatoId === candidato.candidato_id);
+                              if (candidaturaObj) {
+                                if (!candidaturaObj.data_colloquio || new Date() < new Date(candidaturaObj.data_colloquio)) {
+                                  setShowColloquioWarning({ show: true, candidaturaId: candidaturaObj.id, tipo: 'rifiutata' });
+                                } else {
+                                  setValutazioneForm({ show: true, candidaturaId: candidaturaObj.id, tipo: 'rifiutata' });
+                                }
                               }
                             }}
                           >
@@ -1622,6 +1701,58 @@ const DashboardAzienda = () => {
     );
   };
 
+  const renderColloquioWarning = () => {
+    if (!showColloquioWarning.show) return null;
+
+    return (
+      <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">
+                <i className="bi bi-exclamation-triangle text-warning me-2"></i>
+                Colloquio non effettuato
+              </h5>
+            </div>
+            <div className="modal-body">
+              <p>Il colloquio per questa candidatura non è stato ancora programmato o non è ancora stato effettuato.</p>
+              <p>Vuoi proseguire comunque con la valutazione?</p>
+            </div>
+            <div className="modal-footer d-flex justify-content-between">
+              <button 
+                className="btn btn-success"
+                onClick={() => {
+                  setColloquioForm({ show: true, candidaturaId: showColloquioWarning.candidaturaId });
+                  setShowColloquioWarning({ show: false, candidaturaId: null, tipo: null });
+                }}
+              >
+                <i className="bi bi-calendar-plus me-2"></i>
+                Programma Colloquio
+              </button>
+              <div>
+                <button 
+                  className="btn btn-outline-secondary me-2"
+                  onClick={() => setShowColloquioWarning({ show: false, candidaturaId: null, tipo: null })}
+                >
+                  Annulla
+                </button>
+                <button 
+                  className="btn btn-warning"
+                  onClick={() => {
+                    setValutazioneForm({ show: true, candidaturaId: showColloquioWarning.candidaturaId, tipo: showColloquioWarning.tipo });
+                    setShowColloquioWarning({ show: false, candidaturaId: null, tipo: null });
+                  }}
+                >
+                  Prosegui Comunque
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderContent = () => {
     if (colloquioForm.show) {
       return renderFissaColloquio();
@@ -1707,6 +1838,7 @@ const DashboardAzienda = () => {
 
         <div className="main-content">
           {renderContent()}
+          {renderColloquioWarning()}
         </div>
       </div>
     </div>

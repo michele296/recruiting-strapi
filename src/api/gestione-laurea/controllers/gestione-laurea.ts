@@ -31,17 +31,16 @@ module.exports = {
 
   async modifica(ctx) {
     const { id } = ctx.params;
-    const { voto, laurea_id, universita_id } = ctx.request.body;
-    if (!voto || !laurea_id || !universita_id) {
-      return ctx.badRequest('Dati mancanti');
+    const { voto, universita_id } = ctx.request.body;
+    if (!voto || !universita_id) {
+      return ctx.badRequest('Voto e università sono richiesti');
     }
 
     try {
-      // Modifica la riga ha_laurea
+      // Modifica solo voto e università
       const mod = await strapi.entityService.update('api::ha-laurea.ha-laurea', id, {
         data: {
           voto,
-          laurea: laurea_id,
           universita: universita_id,
         },
       });

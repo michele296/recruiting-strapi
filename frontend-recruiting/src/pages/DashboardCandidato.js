@@ -17,7 +17,7 @@ const DashboardCandidato = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [filtroOfferte, setFiltroOfferte] = useState({ azienda: '', stipendioMin: '', stipendioMax: '' });
-  const [filtroCandidature, setFiltroCandidature] = useState({ stato: '', dataInizio: '', dataFine: '', colloquio: '', valutazione: '' });
+  const [filtroCandidature, setFiltroCandidature] = useState({ stato: '', dataInizio: '', dataFine: '', colloquio: '', valutazione: '', azienda: '' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,11 +46,30 @@ const fetchCandidatoData = async (candidatoId) => {
     const candidatoData = await candidatoResponse.json();
     const infoData = await infoResponse.json();
     
+    // Arricchisci le candidature con i nomi delle aziende
+    const candidatureArricchite = await Promise.all(
+      (infoData.candidature || []).map(async (candidatura) => {
+        try {
+          const response = await fetch(`http://localhost:1337/api/offerta/${candidatura.offerta?.id}/dettagli`);
+          if (response.ok) {
+            const offertaDettagli = await response.json();
+            return {
+              ...candidatura,
+              nomeAzienda: offertaDettagli.azienda?.nome || offertaDettagli.utente_aziendale?.azienda?.Nome || 'N/A'
+            };
+          }
+        } catch (error) {
+          console.error('Errore nel recupero dettagli offerta:', error);
+        }
+        return {...candidatura, nomeAzienda: 'N/A'};
+      })
+    );
+    
     // Combina i dati
     const combinedData = {
       candidato: candidatoData.candidato,
       offerteCompatibili: infoData.offerteCompatibili,
-      candidature: infoData.candidature,
+      candidature: candidatureArricchite,
       diplomi: infoData.diplomi,
       lauree: infoData.lauree,
       attestati: infoData.attestati,
@@ -271,6 +290,7 @@ const renderCandidature = () => {
     if (filtroCandidature.colloquio === 'no' && candidatura.data_colloquio) return false;
     if (filtroCandidature.valutazione === 'si' && (!candidatura.valutaziones || candidatura.valutaziones.length === 0)) return false;
     if (filtroCandidature.valutazione === 'no' && candidatura.valutaziones && candidatura.valutaziones.length > 0) return false;
+    if (filtroCandidature.azienda && !candidatura.nomeAzienda?.toLowerCase().includes(filtroCandidature.azienda.toLowerCase())) return false;
     return true;
   }) || [];
 
@@ -299,19 +319,23 @@ const renderCandidature = () => {
               <input 
                 type="date" 
                 className="form-control form-control-sm"
-                placeholder="Data inizio"
+                placeholder="Dal"
+                title="Data inizio candidatura"
                 value={filtroCandidature.dataInizio}
                 onChange={(e) => setFiltroCandidature({...filtroCandidature, dataInizio: e.target.value})}
               />
+              <small className="text-muted">Dal</small>
             </div>
             <div className="col-md-3">
               <input 
                 type="date" 
                 className="form-control form-control-sm"
-                placeholder="Data fine"
+                placeholder="Al"
+                title="Data fine candidatura"
                 value={filtroCandidature.dataFine}
                 onChange={(e) => setFiltroCandidature({...filtroCandidature, dataFine: e.target.value})}
               />
+              <small className="text-muted">Al</small>
             </div>
             <div className="col-md-3">
               <select 
@@ -337,6 +361,15 @@ const renderCandidature = () => {
                 <option value="no">Senza valutazione</option>
               </select>
             </div>
+            <div className="col-md-3">
+              <input 
+                type="text" 
+                className="form-control form-control-sm"
+                placeholder="Nome azienda"
+                value={filtroCandidature.azienda}
+                onChange={(e) => setFiltroCandidature({...filtroCandidature, azienda: e.target.value})}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -351,6 +384,7 @@ const renderCandidature = () => {
                   {candidatura.offerta?.tipo_contratto || 'Posizione non specificata'}
                 </h5>
                 <p className="card-text">
+                  <strong>Azienda:</strong> {candidatura.nomeAzienda || 'N/A'}<br/>
                   <strong>Provincia:</strong> {candidatura.offerta?.Provincia || 'N/A'}<br/>
                   <strong>Stipendio:</strong> €{candidatura.offerta?.stipendio || 'N/A'}<br/>
                   <strong>Data candidatura:</strong> {formatDate(candidatura.data_candidatura)}
@@ -638,7 +672,7 @@ const renderFormazione = () => {
             <div key={`diploma-${diploma.id || Math.random()}`} className="col-md-6 mb-3">
               <div className="card">
                 <div className="card-body">
-                  <h6 className="card-title">{diploma.nome}</h6>
+                  <h6 className="card-title">{diploma.diploma?.nome || diploma.nome}</h6>
                   <p className="card-text">
                     <strong>Voto:</strong> {diploma.voto}<br/>
                     {diploma.scuola && (
@@ -662,7 +696,7 @@ const renderFormazione = () => {
             <div key={`laurea-${laurea.id || Math.random()}`} className="col-md-6 mb-3">
               <div className="card">
                 <div className="card-body">
-                  <h6 className="card-title">{laurea.nome}</h6>
+                  <h6 className="card-title">{laurea.laurea?.nome || laurea.nome}</h6>
                   <p className="card-text">
                     <strong>Voto:</strong> {laurea.voto}<br/>
                     {laurea.universita && (
@@ -686,7 +720,7 @@ const renderFormazione = () => {
             <div key={`attestato-${attestato.id || Math.random()}`} className="col-md-6 mb-3">
               <div className="card">
                 <div className="card-body">
-                  <h6 className="card-title">{attestato.nome}</h6>
+                  <h6 className="card-title">{attestato.attestato?.nome || attestato.nome}</h6>
                   <p className="card-text">
                     <strong>Livello:</strong> {attestato.livello || 'N/A'}
                   </p>
@@ -800,8 +834,19 @@ const renderNotifiche = () => {
   );
 };
 // Funzione per visualizzare i dettagli del colloquio
-const handleViewColloquio = (candidatura) => {
-  setColloquioSelezionato(candidatura);
+const handleViewColloquio = async (candidatura) => {
+  try {
+    const response = await fetch(`http://localhost:1337/api/offerta/${candidatura.offerta?.id}/dettagli`);
+    if (response.ok) {
+      const offertaDettagli = await response.json();
+      setColloquioSelezionato({...candidatura, offerta: offertaDettagli});
+    } else {
+      setColloquioSelezionato(candidatura);
+    }
+  } catch (error) {
+    console.error('Errore nel recupero dettagli offerta:', error);
+    setColloquioSelezionato(candidatura);
+  }
   setActiveSection('colloquio');
 };
 
@@ -897,7 +942,7 @@ const renderColloquio = () => {
               </p>
               <p>
                 <i className="bi bi-geo-alt me-2 text-danger"></i>
-                <strong>Azienda:</strong> {colloquioSelezionato.offerta?.utente_aziendale?.azienda?.Nome || colloquioSelezionato.offerta?.azienda?.Nome || 'N/A'}
+                <strong>Azienda:</strong> {colloquioSelezionato.offerta?.azienda?.nome || colloquioSelezionato.offerta?.utente_aziendale?.azienda?.Nome || colloquioSelezionato.offerta?.azienda?.Nome || 'N/A'}
               </p>
               <p>
                 <i className="bi bi-building me-2 text-success"></i>

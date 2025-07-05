@@ -78,17 +78,20 @@ useEffect(() => {
       const candidatoData = {
         candidato: candidatoResponse_data.candidato,
         diplomi: candidatoResponse_data.candidato.ha_diplomas?.map(hd => ({
-          ...hd,
+          id: hd.id, // ID della relazione ha_diploma
+          voto: hd.voto || hd.voto_diploma,
           diploma: hd.diploma,
           scuola: hd.scuola
         })) || [],
         lauree: candidatoResponse_data.candidato.ha_laureas?.map(hl => ({
-          ...hl,
+          id: hl.id, // ID della relazione ha_laurea
+          voto: hl.voto,
           laurea: hl.laurea,
           universita: hl.universita
         })) || [],
         attestati: candidatoResponse_data.candidato.ha_attestatoes?.map(ha => ({
-          ...ha,
+          id: ha.id, // ID della relazione ha_attestato
+          livello: ha.livello,
           attestato: ha.attestato
         })) || []
       };
@@ -205,7 +208,6 @@ useEffect(() => {
           url = `http://localhost:1337/api/gestione-diploma/modifica/${selectedItem.id}`;
           method = 'PUT';
           body = {
-            diploma_id: formData.diploma_id,
             scuola_id: formData.scuola_id,
             voto_diploma: formData.voto_diploma
           };
@@ -224,7 +226,6 @@ useEffect(() => {
           url = `http://localhost:1337/api/gestione-laurea/modifica/${selectedItem.id}`;
           method = 'PUT';
           body = {
-            laurea_id: formData.laurea_id,
             universita_id: formData.universita_id,
             voto: formData.voto
           };
@@ -242,7 +243,6 @@ useEffect(() => {
           url = `http://localhost:1337/api/gestione-attestato/modifica/${selectedItem.id}`;
           method = 'PUT';
           body = {
-            attestato_id: formData.attestato_id,
             livello: formData.livello
           };
         }
@@ -685,23 +685,38 @@ useEffect(() => {
                 <form onSubmit={handleSubmit}>
                   {modalType === 'diploma' && (
                     <>
-                      <div className="mb-3">
-                        <label className="form-label fw-semibold">Diploma</label>
-                        <select 
-                          className="form-select" 
-                          name="diploma_id"
-                          value={formData.diploma_id}
-                          onChange={handleInputChange}
-                          required
-                        >
-                          <option value="">Seleziona un diploma</option>
-                          {formazioneDisponibile.diplomi.map(diploma => (
-                            <option key={`diploma-option-${diploma.id}`} value={diploma.id}>
-                              {diploma.nome}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                      {modalMode === 'add' && (
+                        <div className="mb-3">
+                          <label className="form-label fw-semibold">Diploma</label>
+                          <select 
+                            className="form-select" 
+                            name="diploma_id"
+                            value={formData.diploma_id}
+                            onChange={handleInputChange}
+                            required
+                          >
+                            <option value="">Seleziona un diploma</option>
+                            {formazioneDisponibile.diplomi.map(diploma => (
+                              <option key={`diploma-option-${diploma.id}`} value={diploma.id}>
+                                {diploma.nome}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                      {modalMode === 'edit' && (
+                        <div className="mb-3">
+                          <label className="form-label fw-semibold">Diploma</label>
+                          <input 
+                            type="text" 
+                            className="form-control" 
+                            value={selectedItem?.diploma?.nome || ''}
+                            disabled
+                            style={{backgroundColor: '#f8f9fa'}}
+                          />
+                          <small className="text-muted">Il diploma non può essere modificato</small>
+                        </div>
+                      )}
                       <div className="mb-3">
                         <label className="form-label fw-semibold">Scuola</label>
                         <select 
@@ -736,23 +751,38 @@ useEffect(() => {
 
                   {modalType === 'laurea' && (
                     <>
-                      <div className="mb-3">
-                        <label className="form-label fw-semibold">Laurea</label>
-                        <select 
-                          className="form-select" 
-                          name="laurea_id"
-                          value={formData.laurea_id}
-                          onChange={handleInputChange}
-                          required
-                        >
-                          <option value="">Seleziona una laurea</option>
-                          {formazioneDisponibile.lauree.map(laurea => (
-                            <option key={`laurea-sel-${laurea.id}`} value={laurea.id}>
-                              {laurea.nome}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                      {modalMode === 'add' && (
+                        <div className="mb-3">
+                          <label className="form-label fw-semibold">Laurea</label>
+                          <select 
+                            className="form-select" 
+                            name="laurea_id"
+                            value={formData.laurea_id}
+                            onChange={handleInputChange}
+                            required
+                          >
+                            <option value="">Seleziona una laurea</option>
+                            {formazioneDisponibile.lauree.map(laurea => (
+                              <option key={`laurea-sel-${laurea.id}`} value={laurea.id}>
+                                {laurea.nome}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                      {modalMode === 'edit' && (
+                        <div className="mb-3">
+                          <label className="form-label fw-semibold">Laurea</label>
+                          <input 
+                            type="text" 
+                            className="form-control" 
+                            value={selectedItem?.laurea?.nome || ''}
+                            disabled
+                            style={{backgroundColor: '#f8f9fa'}}
+                          />
+                          <small className="text-muted">La laurea non può essere modificata</small>
+                        </div>
+                      )}
                       <div className="mb-3">
                         <label className="form-label fw-semibold">Università</label>
                         <select 
@@ -787,23 +817,38 @@ useEffect(() => {
 
                   {modalType === 'attestato' && (
                     <>
-                      <div className="mb-3">
-                        <label className="form-label fw-semibold">Attestato</label>
-                        <select 
-                          className="form-select" 
-                          name="attestato_id"
-                          value={formData.attestato_id}
-                          onChange={handleInputChange}
-                          required
-                        >
-                          <option value="">Seleziona un attestato</option>
-                          {formazioneDisponibile.attestati.map(attestato => (
-                            <option key={`att-sel-${attestato.id}`} value={attestato.id}>
-                              {attestato.nome}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                      {modalMode === 'add' && (
+                        <div className="mb-3">
+                          <label className="form-label fw-semibold">Attestato</label>
+                          <select 
+                            className="form-select" 
+                            name="attestato_id"
+                            value={formData.attestato_id}
+                            onChange={handleInputChange}
+                            required
+                          >
+                            <option value="">Seleziona un attestato</option>
+                            {formazioneDisponibile.attestati.map(attestato => (
+                              <option key={`att-sel-${attestato.id}`} value={attestato.id}>
+                                {attestato.nome}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                      {modalMode === 'edit' && (
+                        <div className="mb-3">
+                          <label className="form-label fw-semibold">Attestato</label>
+                          <input 
+                            type="text" 
+                            className="form-control" 
+                            value={selectedItem?.attestato?.nome || ''}
+                            disabled
+                            style={{backgroundColor: '#f8f9fa'}}
+                          />
+                          <small className="text-muted">L'attestato non può essere modificato</small>
+                        </div>
+                      )}
                       <div className="mb-3">
                         <label className="form-label fw-semibold">Livello</label>
                         <input 

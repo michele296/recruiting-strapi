@@ -30,17 +30,16 @@ module.exports = {
 
   async modifica(ctx) {
     const { id } = ctx.params;
-    const { livello, attestato_id } = ctx.request.body;
+    const { livello } = ctx.request.body;
 
-    if (!livello || !attestato_id) {
-      return ctx.badRequest('Dati mancanti');
+    if (!livello) {
+      return ctx.badRequest('Livello mancante');
     }
 
     try {
       const mod = await strapi.entityService.update('api::ha-attestato.ha-attestato', id, {
         data: { 
-          livello, 
-          attestato: attestato_id 
+          livello
         },
       });
 

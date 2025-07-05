@@ -27,19 +27,18 @@ module.exports = {
   },
 
   async modifica(ctx) {
-    const { id } = ctx.params; // ID del record ha-diploma da modificare
-    const { voto_diploma, diploma_id, scuola_id } = ctx.request.body;
+    const { id } = ctx.params;
+    const { voto_diploma, scuola_id } = ctx.request.body;
 
-    if (!voto_diploma && !diploma_id && !scuola_id) {
-      return ctx.badRequest('Nessun dato fornito per l\'aggiornamento');
+    if (!voto_diploma || !scuola_id) {
+      return ctx.badRequest('Voto e scuola sono richiesti');
     }
 
     try {
       const aggiornato = await strapi.entityService.update('api::ha-diploma.ha-diploma', id, {
         data: {
-          ...(voto_diploma !== undefined && { voto: voto_diploma }),
-          ...(diploma_id && { diploma: diploma_id }),
-          ...(scuola_id && { scuola: scuola_id }),
+          voto: voto_diploma,
+          scuola: scuola_id,
         },
       });
 
@@ -47,6 +46,18 @@ module.exports = {
     } catch (err) {
       console.error(err);
       return ctx.internalServerError('Errore durante la modifica del diploma');
+    }
+  },
+
+  async rimuovi(ctx) {
+    const { id } = ctx.params;
+
+    try {
+      await strapi.entityService.delete('api::ha-diploma.ha-diploma', id);
+      return ctx.send({ messaggio: 'Diploma rimosso con successo' });
+    } catch (err) {
+      console.error('Errore in rimozione diploma:', err);
+      return ctx.internalServerError('Errore durante la rimozione del diploma');
     }
   }
 };
